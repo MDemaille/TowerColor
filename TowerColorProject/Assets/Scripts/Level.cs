@@ -17,7 +17,7 @@ public class Level : MonoBehaviour
     // Start is called before the first frame update
     void Start()
     {
-		GenerateTower(NB_BLOC_PER_LINE, 5, 4);
+		GenerateTower(NB_BLOC_PER_LINE, 40, 6);
     }
 
 	// Update is called once per frame
@@ -57,6 +57,7 @@ public class Level : MonoBehaviour
 				currentBloc.Y = y;
 				currentBloc.X = x;
 				currentBloc.Color = (BlocColor)Random.Range(0, nbColor);
+				currentBloc.ApplyColor();
 
 				_tower.Add(currentBloc);
 			}

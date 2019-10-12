@@ -4,9 +4,9 @@ using UnityEngine;
 
 public enum BlocColor {
 	Blue,
-	Green,
-	Purple,
 	Yellow,
+	Purple,
+	Green,
 	Pink,
 	Red
 }
@@ -23,4 +23,11 @@ public class Bloc : MonoBehaviour
 	public BlocColor Color;
 	[HideInInspector]
 	public bool Destructible = true;
+
+	public Renderer renderer;
+
+	public void ApplyColor() {
+		renderer.material = GameManager.Instance.GameData.GetBlocColorMaterial(Color);
+	}
+
 }

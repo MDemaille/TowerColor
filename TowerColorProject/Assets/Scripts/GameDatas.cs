@@ -16,4 +16,23 @@ public class GameDatas : ScriptableObject
 	public Material MaterialYellow;
 	public Material MaterialRed;
 	public Material MaterialBlack;
+
+	public Material GetBlocColorMaterial(BlocColor color) {
+		switch (color) {
+			case (BlocColor.Blue):
+				return MaterialBlue;
+			case (BlocColor.Purple):
+				return MaterialPurple;
+			case (BlocColor.Pink):
+				return MaterialPink;
+			case (BlocColor.Green):
+				return MaterialGreen;
+			case (BlocColor.Yellow):
+				return MaterialYellow;
+			case (BlocColor.Red):
+				return MaterialRed;
+			default:
+				return null;
+		}
+	}
 }
