@@ -1,47 +1,41 @@
 ﻿using System.Collections;
 using System.Collections.Generic;
+using System.Security.Cryptography;
 using UnityEngine;
 
-public class Level : MonoBehaviour
+public class Tower : MonoBehaviour
 {
 	private List<Bloc> _tower = new List<Bloc>();
 	private int _nbBlocPerLine;
 	private int _height;
 	private int _nbColor;
+	private int _nbLineEnabled;
 
-	private const float Y_START = 1.5f;
-	private const float BLOC_HEIGHT = 2;
+	private const float Y_START = 1.25f;
+	private const float BLOC_HEIGHT = 1.5f;
 	private const int NB_BLOC_PER_LINE = 15;
 	private const float RADIUS = 2.5f;
 
-    // Start is called before the first frame update
-    void Start()
+    public void InitTower(int nbLineEnabled, int height, int nbColor)
     {
-		GenerateTower(NB_BLOC_PER_LINE, 40, 6);
+	    _nbLineEnabled = nbLineEnabled;
+		GenerateTower(NB_BLOC_PER_LINE, height, nbColor);
     }
 
-	// Update is called once per frame
 	void GenerateTower(int nbBlocPerLine, int height, int nbColor) {
 		_nbBlocPerLine = nbBlocPerLine;
 		_height = height;
 		_nbColor = nbColor;
 
 		//STEP 1 : CREATE THE TOWER DATA
+		foreach (var bloc in _tower)
+		{
+			Destroy(bloc.gameObject);
+		}
 		_tower.Clear();
 
 		for (int y = 0; y < _height; y++) {
 			for (int x = 0; x < _nbBlocPerLine ; x++) {
-
-				/*float value = (float)x / (float)_nbBlocPerLine;
-
-				float teta = (Mathf.PI * 2) * value;
-				float phi = -Mathf.PI / 2;
-
-				float pX =  (float)(Mathf.Sin(phi) * Mathf.Cos(teta));
-				float pZ =  (float)(Mathf.Sin(phi) * Mathf.Sin((teta)));
-
-				Vector3 position = new Vector3(pX, Y_START + y * BLOC_HEIGHT,pZ);*/
-
 				
 				float angle = 360f / (float)nbBlocPerLine;
 				float angleOffset = (y % 2 == 0) ? 0 : 360 / (nbBlocPerLine * 2);
@@ -58,10 +52,57 @@ public class Level : MonoBehaviour
 				currentBloc.X = x;
 				currentBloc.Color = (BlocColor)Random.Range(0, nbColor);
 				currentBloc.ApplyColor();
+				currentBloc.TogglePhysics(false);
 
 				_tower.Add(currentBloc);
 			}
 		}
+
+		UpdateDestructibleBlocs();
+	}
+
+	//Called when the play phase starts and each time a bloc is considered destroyed
+	public void UpdateDestructibleBlocs()
+	{
+		int indexLastDestructibleLine = 0;
+		for (int y = _height - 1; y >= 0; y--)
+		{
+			if (!isLineDestroyed(y))
+			{
+				indexLastDestructibleLine = y - _nbLineEnabled;
+				break;
+			}
+		}
+
+		for (int y = _height - 1; y >= 0; y--)
+		{
+			SetLineDestructible(y, y>=indexLastDestructibleLine);
+		}
+
+		//Update camera Y
+		Bloc MiddleBloc = GetBloc(0, indexLastDestructibleLine + (_nbLineEnabled / 2));
+		GameManager.Instance.SetPlayCameraY(MiddleBloc.transform.position.y);
+
+	}
+
+	public void SetLineDestructible(int y, bool destructible) {
+		for (int x = 0; x < _nbBlocPerLine; x++) {
+			Bloc blocToCheck = GetBloc(x, y);
+			if (blocToCheck != null && !blocToCheck.Destroyed)
+				blocToCheck.SetDestructible(destructible);
+		}
+	}
+
+	public bool isLineDestroyed(int y)
+	{
+		for (int x = 0; x < _nbBlocPerLine; x++)
+		{
+			Bloc blocToCheck = GetBloc(x, y);
+			if (blocToCheck != null && !blocToCheck.Destroyed)
+				return false;
+		}
+
+		return true;
 	}
 
 	public Bloc GetBloc(int index) {

@@ -23,11 +23,34 @@ public class Bloc : MonoBehaviour
 	public BlocColor Color;
 	[HideInInspector]
 	public bool Destructible = true;
+	[HideInInspector]
+	public bool Destroyed = false;
 
 	public Renderer renderer;
+	public Rigidbody rigidbody;
 
+	//Todo Color
 	public void ApplyColor() {
-		renderer.material = GameManager.Instance.GameData.GetBlocColorMaterial(Color);
+		renderer.material = Destructible ? GameManager.Instance.GameData.GetBlocColorMaterial(Color) : GameManager.Instance.GameData.MaterialBlack;
+	}
+
+	public void SetDestructible(bool destructible)
+	{
+		Destructible = destructible;
+		TogglePhysics(Destructible);
+		ApplyColor();
+	}
+
+	public void TogglePhysics(bool toggle)
+	{
+		rigidbody.isKinematic = !toggle;
+	}
+
+	public void Destroy()
+	{
+		Destroyed = true;
+		renderer.enabled = false;
+		gameObject.SetActive(false);
 	}
 
 }

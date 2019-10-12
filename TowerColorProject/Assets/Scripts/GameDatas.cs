@@ -8,6 +8,9 @@ public class GameDatas : ScriptableObject
 	[Header("Prefab")]
 	public GameObject BlocPrefab;
 
+	[Header("Level parameters")]
+	public List<LevelInfos> LevelInfos;
+
 	[Header("Materials")]
 	public Material MaterialBlue;
 	public Material MaterialPurple;
@@ -17,6 +20,7 @@ public class GameDatas : ScriptableObject
 	public Material MaterialRed;
 	public Material MaterialBlack;
 
+	//TODO : Color blind option
 	public Material GetBlocColorMaterial(BlocColor color) {
 		switch (color) {
 			case (BlocColor.Blue):
@@ -35,4 +39,12 @@ public class GameDatas : ScriptableObject
 				return null;
 		}
 	}
+}
+
+[System.Serializable]
+public class LevelInfos
+{
+	public int TowerHeight = 10;
+	public int NbColors = 1;
+	public int NbLinesEnabled = 5;
 }
