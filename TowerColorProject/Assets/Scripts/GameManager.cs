@@ -100,7 +100,11 @@ public class GameManager : Singleton<GameManager>
 
 	public void GetShootInput()
 	{
-		
+		if (Input.touchCount > 0)
+		{
+			Touch currentTouch = Input.GetTouch(0);
+			//If the touch is short we raycast and we destroy stuff
+		}
 	}
 
 	public void SetPlayCameraY(float value)
@@ -123,7 +127,7 @@ public class GameManager : Singleton<GameManager>
 
 		CameraTargetTransform.position = new Vector3(CameraTargetTransform.position.x, _yCameraTarget, CameraTargetTransform.position.z);
 
-		CameraTransform.position = Vector3.SmoothDamp(CameraTransform.position, CameraTargetTransform.position, ref velocity, 0.2f);
+		CameraTransform.position = CameraTargetTransform.position;//Vector3.Lerp(CameraTransform.position, CameraTargetTransform.position, Time.smoothDeltaTime);//Vector3.SmoothDamp(CameraTransform.position, CameraTargetTransform.position, ref velocity, 0.2f);
 		CameraTransform.LookAt( new Vector3(0, CameraTransform.position.y, 0));
 	}
 }

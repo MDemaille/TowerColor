@@ -90,6 +90,11 @@ public class Tower : MonoBehaviour
 			Bloc blocToCheck = GetBloc(x, y);
 			if (blocToCheck != null && !blocToCheck.Destroyed)
 				blocToCheck.SetDestructible(destructible);
+			else
+			{
+				GetBloc(x, y);
+				Debug.Log("Hello");
+			}
 		}
 	}
 
@@ -115,9 +120,9 @@ public class Tower : MonoBehaviour
 
 	public Bloc GetBloc(int x, int y) {
 
-		x = x % _tower.Count; 
+		x = x % _nbBlocPerLine; 
 
-		if (y * _nbBlocPerLine + x > 0 && y * _nbBlocPerLine + x < _tower.Count) {
+		if (y * _nbBlocPerLine + x >= 0 && y * _nbBlocPerLine + x < _tower.Count) {
 			return _tower[y * _nbBlocPerLine + x];
 		}
 

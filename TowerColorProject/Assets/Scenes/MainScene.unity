@@ -386,7 +386,7 @@ MonoBehaviour:
   CameraShowPhasePosition: {fileID: 0}
   CameraPlayPhasePosition: {fileID: 0}
   ColorBlindOption: 0
-  CameraSpeed: 50
+  CameraSpeed: 5000
 --- !u!4 &865912648
 Transform:
   m_ObjectHideFlags: 0
