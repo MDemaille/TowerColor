@@ -9,11 +9,15 @@ public class Level : MonoBehaviour
 	private int _height;
 	private int _nbColor;
 
+	private const float Y_START = 1.5f;
+	private const float BLOC_HEIGHT = 2;
+	private const int NB_BLOC_PER_LINE = 15;
+	private const float RADIUS = 2.5f;
 
     // Start is called before the first frame update
     void Start()
     {
-        
+		GenerateTower(NB_BLOC_PER_LINE, 5, 4);
     }
 
 	// Update is called once per frame
@@ -27,7 +31,28 @@ public class Level : MonoBehaviour
 
 		for (int y = 0; y < _height; y++) {
 			for (int x = 0; x < _nbBlocPerLine ; x++) {
-				Bloc currentBloc = new Bloc();
+
+				/*float value = (float)x / (float)_nbBlocPerLine;
+
+				float teta = (Mathf.PI * 2) * value;
+				float phi = -Mathf.PI / 2;
+
+				float pX =  (float)(Mathf.Sin(phi) * Mathf.Cos(teta));
+				float pZ =  (float)(Mathf.Sin(phi) * Mathf.Sin((teta)));
+
+				Vector3 position = new Vector3(pX, Y_START + y * BLOC_HEIGHT,pZ);*/
+
+				
+				float angle = 360f / (float)nbBlocPerLine;
+				float angleOffset = (y % 2 == 0) ? 0 : 360 / (nbBlocPerLine * 2);
+
+				Vector3 position = new Vector3(RADIUS * Mathf.Sin(((angle*x) + angleOffset) * Mathf.Deg2Rad),
+												Y_START + y*BLOC_HEIGHT,
+												RADIUS * Mathf.Cos(((angle*x) + angleOffset) * Mathf.Deg2Rad));
+
+				GameObject goBloc = Instantiate(GameManager.Instance.GameData.BlocPrefab, position, Quaternion.identity);
+
+				Bloc currentBloc = goBloc.GetComponent<Bloc>();
 				currentBloc.Id = y * _nbBlocPerLine + x;
 				currentBloc.Y = y;
 				currentBloc.X = x;
@@ -36,10 +61,7 @@ public class Level : MonoBehaviour
 				_tower.Add(currentBloc);
 			}
 		}
-
-		//STEP2 : INSTANTIATE THE TOWER (IMPROVEMENT : POOL OBJECTS)
-
-    }
+	}
 
 	public Bloc GetBloc(int index) {
 		if (index > 0 && index < _tower.Count) {
