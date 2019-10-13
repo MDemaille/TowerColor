@@ -72,6 +72,18 @@ public class Tower : MonoBehaviour
 		UpdateDestructibleBlocs();
 	}
 
+	//return special ratio updated to fit score
+	public float GetDestroyedBlocRatioForScore()
+	{
+		int cptDestroyedBlocs = 0;
+		foreach (var bloc in _tower)
+		{
+			cptDestroyedBlocs += bloc.Destroyed ? 1 : 0;
+		}
+
+		return (float)cptDestroyedBlocs /(float) (_tower.Count - NB_BLOC_PER_LINE );
+	}
+
 	public List<BlocColor> GetColorsAvailableInTower()
 	{
 		List<BlocColor> colors = new List<BlocColor>();

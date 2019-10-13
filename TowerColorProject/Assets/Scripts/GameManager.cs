@@ -8,7 +8,8 @@ public enum GamePhase
 	Init,
 	Show,
 	Play,
-	LevelEnd
+	LevelEnd,
+	LevelFail
 }
 
 public enum DisplayMode
@@ -27,6 +28,7 @@ public class GameManager : Singleton<GameManager>
 	public Transform CameraTargetTransform;
 	public Transform CameraShowPhasePosition;
 	public Transform CameraPlayPhasePosition;
+	public Transform ShotSpawn;
 
 	public bool ColorBlindOption = false;
 
@@ -47,13 +49,24 @@ public class GameManager : Singleton<GameManager>
 	public float MaximumTimeTouchToShoot = 0.15f;
 	private float _touchTimer = 0f;
 
+	private float _score = 0f;
+
+	private bool _failTimerEnabled = false;
+
 	public void Awake()
 	{
 		_currentLevel = PlayerPrefs.GetInt(_playerPrefLevelData);
 
 		//TODO : Fade to black
+		RegisterToEvents(true);
+		
 
 		InitLevel(GameData.LevelInfos[_currentLevel], _currentLevel);
+	}
+
+	public void RegisterToEvents(bool register)
+	{
+		EventManager.SetEventListener(EventList.OnBlocDestroyed, UpdateScore, register);
 	}
 
 	public void SetGamePhase(GamePhase gamePhase)
@@ -70,6 +83,8 @@ public class GameManager : Singleton<GameManager>
 
 		Tower.InitTower(infos.NbLinesEnabled, infos.TowerHeight, infos.NbColors);
 		NbShotsAvailable = infos.NbShots;
+		_score = 0;
+		_failTimerEnabled = false;
 
 		//ShowLevel();
 		SetGamePhase(GamePhase.Play);
@@ -102,17 +117,54 @@ public class GameManager : Singleton<GameManager>
 		{
 			UpdateCamera();
 			GetShootInput();
-		}
+			if (IsVictoryScoreReached()) {
+				LevelEnd();
+			}
 
-		//TODO : If score reached call the level end function
+			if (!_failTimerEnabled && NbShotsAvailable <= 0)
+			{
+				StartCoroutine(TimerBeforeLevelFail());
+			}
+		}
+	}
+
+	#region Score
+
+	public void UpdateScore(object obj)
+	{
+		_score = Tower.GetDestroyedBlocRatioForScore();
+		Debug.Log(_score);
+	}
+
+	public bool IsVictoryScoreReached()
+	{
+		return _score >= 1f;
+	}
+
+	public IEnumerator TimerBeforeLevelFail()
+	{
+		_failTimerEnabled = true;
+		yield return new WaitForSeconds(GameData.TimeToFailLevelWhenOutOfShots);
+
+		if(!IsVictoryScoreReached())
+			LevelFail();
 	}
 
 	public void LevelEnd()
 	{
 		SetGamePhase(GamePhase.LevelEnd);
 
-		//TODO Go to next Level
+		_currentLevel++;
+		InitLevel(GameData.LevelInfos[_currentLevel], _currentLevel);
 	}
+
+	public void LevelFail() {
+		SetGamePhase(GamePhase.LevelFail);
+
+		InitLevel(GameData.LevelInfos[_currentLevel], _currentLevel);
+	}
+
+	#endregion
 
 	#region Shoot
 
@@ -150,7 +202,7 @@ public class GameManager : Singleton<GameManager>
 				if (Physics.Raycast(ray, out hitInfos))
 				{
 					Bloc hitBloc = hitInfos.transform.GetComponent<Bloc>();
-					if(hitBloc != null && hitBloc.Destructible && !hitBloc.Destroyed)
+					if(hitBloc != null && hitBloc.Destructible)
 						Shoot(hitBloc);
 				}
 
@@ -163,17 +215,42 @@ public class GameManager : Singleton<GameManager>
 	public void Shoot(Bloc blocToShoot)
 	{
 		NbShotsAvailable--;
-		if (blocToShoot.Destructible && blocToShoot.Color.Equals(CurrentShotColor))
-		{
-			List<Bloc> blocsToDestroy = Tower.GetBlocsToDestroy(blocToShoot);
-			foreach (var bloc in blocsToDestroy)
-			{
-				bloc.Destroy();
-			}
-		}
+		StartCoroutine(ShootBallCoroutine(0.25f, blocToShoot, CurrentShotColor));
 
 		EventManager.TriggerEvent(EventList.OnShotFired, NbShotsAvailable);
 		DrawNewBall();
+	}
+
+	public IEnumerator ShootBallCoroutine(float timeToReachTarget, Bloc blocToShoot, BlocColor colorShot )
+	{
+		GameObject ball = Instantiate(Instance.GameData.ShotPrefab, ShotSpawn.position, Quaternion.identity);
+		Renderer ballRenderer = ball.GetComponent<Renderer>();
+
+		ballRenderer.material = GameData.GetBlocColorMaterial(CurrentShotColor);
+
+		float timer = 0f;
+		float progression = 0f;
+		Vector3 startPosition = ShotSpawn.position;
+		while (timer < timeToReachTarget)
+		{
+			timer += Time.deltaTime;
+			progression = timer / timeToReachTarget;
+
+			ball.transform.position = Vector3.Lerp(startPosition, blocToShoot.transform.position, progression);
+
+			float yVariation = GameData.BallTrajectory.Evaluate(progression);
+			ball.transform.position += Vector3.up * yVariation;
+
+			yield return new WaitForSeconds(Time.deltaTime);
+		}
+
+		Destroy(ball);
+		if (blocToShoot.Destructible && blocToShoot.Color.Equals(colorShot)) {
+			List<Bloc> blocsToDestroy = Tower.GetBlocsToDestroy(blocToShoot);
+			foreach (var bloc in blocsToDestroy) {
+				bloc.Destroy();
+			}
+		}
 	}
 
 	#endregion

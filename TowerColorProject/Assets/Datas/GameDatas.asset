@@ -14,11 +14,25 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   BlocPrefab: {fileID: 7828353319931517011, guid: 8d5fa38798f2d5245836e17f49e88766,
     type: 3}
+  ShotPrefab: {fileID: 150031366240343868, guid: 658df8d6a71724e4db9513f877e915c9,
+    type: 3}
   LevelInfos:
-  - TowerHeight: 30
+  - TowerHeight: 10
+    NbColors: 2
+    NbLinesEnabled: 10
+    NbShots: 10
+  - TowerHeight: 12
     NbColors: 3
-    NbLinesEnabled: 7
-    NbShots: 20
+    NbLinesEnabled: 6
+    NbShots: 11
+  - TowerHeight: 15
+    NbColors: 3
+    NbLinesEnabled: 5
+    NbShots: 13
+  - TowerHeight: 20
+    NbColors: 4
+    NbLinesEnabled: 5
+    NbShots: 15
   MaterialBlue: {fileID: 2100000, guid: 52d6eb716f2146342b80084d0a146f4b, type: 2}
   MaterialPurple: {fileID: 2100000, guid: 6fdf0f1beb228c849b2bad10f34d83ba, type: 2}
   MaterialPink: {fileID: 2100000, guid: 2dc3fa8e875755e488774e6d44e64dc0, type: 2}
@@ -27,3 +41,37 @@ MonoBehaviour:
   MaterialRed: {fileID: 2100000, guid: 328dbc688068e9d46aafa53599079444, type: 2}
   MaterialBlack: {fileID: 2100000, guid: 430cfaf1b7cdf904ba121467c9294f91, type: 2}
   YDistanceToConsiderBlocDestroyed: 0.5
+  BallTrajectory:
+    serializedVersion: 2
+    m_Curve:
+    - serializedVersion: 3
+      time: 0.0033454895
+      value: 0.0047187805
+      inSlope: 2.0180852
+      outSlope: 2.0180852
+      tangentMode: 34
+      weightedMode: 0
+      inWeight: 0
+      outWeight: 0.33333334
+    - serializedVersion: 3
+      time: 0.4983154
+      value: 1.0036103
+      inSlope: 0.013116896
+      outSlope: 0.013116896
+      tangentMode: 34
+      weightedMode: 0
+      inWeight: 0.33333334
+      outWeight: 0.33333334
+    - serializedVersion: 3
+      time: 1.0033569
+      value: -0.002357483
+      inSlope: -1.9918514
+      outSlope: -1.9918514
+      tangentMode: 34
+      weightedMode: 0
+      inWeight: 0.33333334
+      outWeight: 0
+    m_PreInfinity: 2
+    m_PostInfinity: 2
+    m_RotationOrder: 4
+  TimeToFailLevelWhenOutOfShots: 3

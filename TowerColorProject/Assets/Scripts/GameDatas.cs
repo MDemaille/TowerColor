@@ -7,6 +7,7 @@ public class GameDatas : ScriptableObject
 {
 	[Header("Prefab")]
 	public GameObject BlocPrefab;
+	public GameObject ShotPrefab;
 
 	[Header("Level parameters")]
 	public List<LevelInfos> LevelInfos;
@@ -22,6 +23,9 @@ public class GameDatas : ScriptableObject
 
 	[Header("Parameters")]
 	public float YDistanceToConsiderBlocDestroyed = 0.5f;
+	public AnimationCurve BallTrajectory;
+
+	public float TimeToFailLevelWhenOutOfShots = 3f;
 
 	//TODO : Color blind option
 	public Material GetBlocColorMaterial(BlocColor color) {
