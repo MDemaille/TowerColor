@@ -20,6 +20,9 @@ public class GameDatas : ScriptableObject
 	public Material MaterialRed;
 	public Material MaterialBlack;
 
+	[Header("Parameters")]
+	public float YDistanceToConsiderBlocDestroyed = 0.5f;
+
 	//TODO : Color blind option
 	public Material GetBlocColorMaterial(BlocColor color) {
 		switch (color) {
@@ -47,4 +50,5 @@ public class LevelInfos
 	public int TowerHeight = 10;
 	public int NbColors = 1;
 	public int NbLinesEnabled = 5;
+	public int NbShots = 10;
 }

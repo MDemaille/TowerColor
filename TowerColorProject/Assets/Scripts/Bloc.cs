@@ -26,12 +26,29 @@ public class Bloc : MonoBehaviour
 	[HideInInspector]
 	public bool Destroyed = false;
 
-	public Renderer renderer;
-	public Rigidbody rigidbody;
+	public Renderer BlocRenderer;
+	public Rigidbody BlocRigidbody;
+
+	public float StartY { get; private set; }
+	private bool _startYRegistered = false;
+
+	void Update()
+	{
+		if (_startYRegistered && !Destroyed && Mathf.Abs(StartY - transform.position.y) > GameManager.Instance.GameData.YDistanceToConsiderBlocDestroyed)
+		{
+			Destroy(false);
+		}
+	}
+
+	public void RegisterStartY()
+	{
+		StartY = transform.position.y;
+		_startYRegistered = true;
+	}
 
 	//Todo Color
 	public void ApplyColor() {
-		renderer.material = Destructible ? GameManager.Instance.GameData.GetBlocColorMaterial(Color) : GameManager.Instance.GameData.MaterialBlack;
+		BlocRenderer.material = Destructible ? GameManager.Instance.GameData.GetBlocColorMaterial(Color) : GameManager.Instance.GameData.MaterialBlack;
 	}
 
 	public void SetDestructible(bool destructible)
@@ -43,14 +60,20 @@ public class Bloc : MonoBehaviour
 
 	public void TogglePhysics(bool toggle)
 	{
-		rigidbody.isKinematic = !toggle;
+		BlocRigidbody.isKinematic = !toggle;
 	}
 
-	public void Destroy()
+	public void Destroy(bool visualEffects = true)
 	{
 		Destroyed = true;
-		renderer.enabled = false;
-		gameObject.SetActive(false);
+
+		if (visualEffects)
+		{
+			BlocRenderer.enabled = false;
+			gameObject.SetActive(false);
+		}
+
+		EventManager.TriggerEvent(EventList.OnBlocDestroyed);
 	}
 
 }

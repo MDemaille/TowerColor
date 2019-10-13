@@ -48,3 +48,11 @@ public class EventManager : Singleton<EventManager> {
 		}
 	}
 }
+
+public class EventList
+{
+	public static string OnGamePhaseChanged = "OnGamePhaseChanged";
+	public static string OnShotFired = "OnShotFired";
+	public static string OnDrawNewBall = "OnDrawNewBall";
+	public static string OnBlocDestroyed = "OnBlocDestroyed";
+}

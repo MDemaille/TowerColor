@@ -15,9 +15,10 @@ MonoBehaviour:
   BlocPrefab: {fileID: 7828353319931517011, guid: 8d5fa38798f2d5245836e17f49e88766,
     type: 3}
   LevelInfos:
-  - TowerHeight: 10
-    NbColors: 2
-    NbLinesEnabled: 5
+  - TowerHeight: 30
+    NbColors: 3
+    NbLinesEnabled: 7
+    NbShots: 20
   MaterialBlue: {fileID: 2100000, guid: 52d6eb716f2146342b80084d0a146f4b, type: 2}
   MaterialPurple: {fileID: 2100000, guid: 6fdf0f1beb228c849b2bad10f34d83ba, type: 2}
   MaterialPink: {fileID: 2100000, guid: 2dc3fa8e875755e488774e6d44e64dc0, type: 2}
@@ -25,3 +26,4 @@ MonoBehaviour:
   MaterialYellow: {fileID: 2100000, guid: 4a1e72bf47b334e4b80cf614354ff035, type: 2}
   MaterialRed: {fileID: 2100000, guid: 328dbc688068e9d46aafa53599079444, type: 2}
   MaterialBlack: {fileID: 2100000, guid: 430cfaf1b7cdf904ba121467c9294f91, type: 2}
+  YDistanceToConsiderBlocDestroyed: 0.5
