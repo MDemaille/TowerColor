@@ -41,6 +41,7 @@ MonoBehaviour:
   MaterialRed: {fileID: 2100000, guid: 328dbc688068e9d46aafa53599079444, type: 2}
   MaterialBlack: {fileID: 2100000, guid: 430cfaf1b7cdf904ba121467c9294f91, type: 2}
   YDistanceToConsiderBlocDestroyed: 0.5
+  YLowestCamera: 6
   BallTrajectory:
     serializedVersion: 2
     m_Curve:
@@ -74,4 +75,5 @@ MonoBehaviour:
     m_PreInfinity: 2
     m_PostInfinity: 2
     m_RotationOrder: 4
+  TimeBetweenBlocDestruction: 0.05
   TimeToFailLevelWhenOutOfShots: 3

@@ -23,7 +23,9 @@ public class GameDatas : ScriptableObject
 
 	[Header("Parameters")]
 	public float YDistanceToConsiderBlocDestroyed = 0.5f;
+	public float YLowestCamera = 7f;
 	public AnimationCurve BallTrajectory;
+	public float TimeBetweenBlocDestruction = 0.1f;
 
 	public float TimeToFailLevelWhenOutOfShots = 3f;
 

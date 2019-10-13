@@ -1,5 +1,6 @@
 ﻿using System.Collections;
 using System.Collections.Generic;
+using System.Linq;
 using UnityEngine;
 
 public enum BlocColor {
@@ -28,16 +29,32 @@ public class Bloc : MonoBehaviour
 
 	public Renderer BlocRenderer;
 	public Rigidbody BlocRigidbody;
+	public Collider BlocCollider;
+	public ParticleSystem DestructionParticleSystem;
+	public ParticleSystemRenderer DestructionParticleRenderer;
 
 	public float StartY { get; private set; }
 	private bool _startYRegistered = false;
+
+	private List<Bloc> _neighborsBlocs = new List<Bloc>();
 
 	void Update()
 	{
 		if (_startYRegistered && !Destroyed && Mathf.Abs(StartY - transform.position.y) > GameManager.Instance.GameData.YDistanceToConsiderBlocDestroyed)
 		{
-			Destroy(false);
+			DestroyBloc(false);
 		}
+	}
+
+	public void AddNeighbor(Bloc bloc)
+	{
+		if(!_neighborsBlocs.Contains(bloc))
+			_neighborsBlocs.Add(bloc);
+	}
+
+	public void RemoveNeighbor(Bloc bloc)
+	{
+		_neighborsBlocs.Remove(bloc);
 	}
 
 	public void RegisterStartY()
@@ -49,6 +66,7 @@ public class Bloc : MonoBehaviour
 	//Todo Color
 	public void ApplyColor() {
 		BlocRenderer.material = Destructible ? GameManager.Instance.GameData.GetBlocColorMaterial(Color) : GameManager.Instance.GameData.MaterialBlack;
+		DestructionParticleRenderer.material = GameManager.Instance.GameData.GetBlocColorMaterial(Color);
 	}
 
 	public void SetDestructible(bool destructible)
@@ -63,17 +81,38 @@ public class Bloc : MonoBehaviour
 		BlocRigidbody.isKinematic = !toggle;
 	}
 
-	public void Destroy(bool visualEffects = true)
+	public void DestroyBloc(bool destroyFromHit = true)
 	{
 		Destroyed = true;
 
-		if (visualEffects)
+		if (destroyFromHit)
 		{
 			BlocRenderer.enabled = false;
-			gameObject.SetActive(false);
+			BlocCollider.enabled = false;
+			Destroy(BlocRigidbody);
+
+			DestructionParticleSystem.gameObject.SetActive(true);
+
+			StartCoroutine(DestroyNeighbors(GameManager.Instance.GameData.TimeBetweenBlocDestruction));
+
+			//gameObject.SetActive(false);
 		}
 
 		EventManager.TriggerEvent(EventList.OnBlocDestroyed);
+	}
+
+	public IEnumerator DestroyNeighbors(float timeBetweenDestruction)
+	{
+		List<Bloc> tempNeighbors = new List<Bloc>();
+		tempNeighbors.AddRange(_neighborsBlocs);
+
+		foreach (var neighbor in tempNeighbors) {
+			if (neighbor.Destructible && !neighbor.Destroyed && neighbor.Color.Equals(Color))
+			{
+				yield return new WaitForSeconds(timeBetweenDestruction);
+				neighbor.DestroyBloc(true);
+			}
+		}
 	}
 
 }

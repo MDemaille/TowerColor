@@ -34,7 +34,7 @@ public class GameManager : Singleton<GameManager>
 
 	//Variables to handle game loop
 	private GamePhase _currentGamePhase = GamePhase.Init;
-	private int _currentLevel = 0;
+	public int CurrentLevel { get; private set; }
 	private string _playerPrefLevelData = "LevelSave";
 
 	[Header("Camera Movement")]
@@ -49,19 +49,19 @@ public class GameManager : Singleton<GameManager>
 	public float MaximumTimeTouchToShoot = 0.15f;
 	private float _touchTimer = 0f;
 
-	private float _score = 0f;
+	public float Score { get; private set; }
 
 	private bool _failTimerEnabled = false;
 
 	public void Awake()
 	{
-		_currentLevel = PlayerPrefs.GetInt(_playerPrefLevelData);
+		CurrentLevel = PlayerPrefs.GetInt(_playerPrefLevelData);
 
 		//TODO : Fade to black
 		RegisterToEvents(true);
 		
 
-		InitLevel(GameData.LevelInfos[_currentLevel], _currentLevel);
+		InitLevel(GameData.LevelInfos[CurrentLevel], CurrentLevel);
 	}
 
 	public void RegisterToEvents(bool register)
@@ -77,19 +77,27 @@ public class GameManager : Singleton<GameManager>
 
 	public void InitLevel(LevelInfos infos, int levelId)
 	{
-		_currentLevel = levelId;
-		PlayerPrefs.SetInt(_playerPrefLevelData, _currentLevel);
+		CurrentLevel = levelId;
+		PlayerPrefs.SetInt(_playerPrefLevelData, CurrentLevel);
 		PlayerPrefs.Save();
 
 		Tower.InitTower(infos.NbLinesEnabled, infos.TowerHeight, infos.NbColors);
 		NbShotsAvailable = infos.NbShots;
-		_score = 0;
+
+		SetScore(0);
+
 		_failTimerEnabled = false;
 
 		//ShowLevel();
 		SetGamePhase(GamePhase.Play);
 		DrawNewBall();
 
+	}
+
+	public void SetScore(float score)
+	{
+		Score = score;
+		EventManager.TriggerEvent(EventList.OnScoreUpdated);
 	}
 
 	public void ShowLevel()
@@ -132,18 +140,18 @@ public class GameManager : Singleton<GameManager>
 
 	public void UpdateScore(object obj)
 	{
-		_score = Tower.GetDestroyedBlocRatioForScore();
-		Debug.Log(_score);
+		SetScore(Tower.GetDestroyedBlocRatioForScore());
 	}
 
 	public bool IsVictoryScoreReached()
 	{
-		return _score >= 1f;
+		return Score >= 1f;
 	}
 
 	public IEnumerator TimerBeforeLevelFail()
 	{
 		_failTimerEnabled = true;
+		int level = CurrentLevel;
 		yield return new WaitForSeconds(GameData.TimeToFailLevelWhenOutOfShots);
 
 		if(!IsVictoryScoreReached())
@@ -154,14 +162,14 @@ public class GameManager : Singleton<GameManager>
 	{
 		SetGamePhase(GamePhase.LevelEnd);
 
-		_currentLevel++;
-		InitLevel(GameData.LevelInfos[_currentLevel], _currentLevel);
+		CurrentLevel++;
+		InitLevel(GameData.LevelInfos[CurrentLevel], CurrentLevel);
 	}
 
 	public void LevelFail() {
 		SetGamePhase(GamePhase.LevelFail);
 
-		InitLevel(GameData.LevelInfos[_currentLevel], _currentLevel);
+		InitLevel(GameData.LevelInfos[CurrentLevel], CurrentLevel);
 	}
 
 	#endregion
@@ -183,7 +191,27 @@ public class GameManager : Singleton<GameManager>
 		EventManager.TriggerEvent(EventList.OnDrawNewBall);
 	}
 
-	public bool GetShootInput() {
+	public void GetShootInput() {
+
+		if (NbShotsAvailable <= 0)
+			return;
+
+#if UNITY_EDITOR
+
+		if (Input.GetMouseButtonDown(0))
+		{
+			Ray ray = MainCamera.ScreenPointToRay(Input.mousePosition);
+			RaycastHit hitInfos;
+
+			if (Physics.Raycast(ray, out hitInfos)) {
+				Bloc hitBloc = hitInfos.transform.GetComponent<Bloc>();
+				if (hitBloc != null && hitBloc.Destructible)
+					Shoot(hitBloc);
+			}
+		}
+
+#endif
+
 		if (Input.touchCount > 0) {
 			Touch currentTouch = Input.GetTouch(0);
 			if (currentTouch.phase == TouchPhase.Began || currentTouch.phase == TouchPhase.Canceled)
@@ -208,8 +236,6 @@ public class GameManager : Singleton<GameManager>
 
 			}
 		}
-
-		return false;
 	}
 
 	public void Shoot(Bloc blocToShoot)
@@ -245,12 +271,17 @@ public class GameManager : Singleton<GameManager>
 		}
 
 		Destroy(ball);
-		if (blocToShoot.Destructible && blocToShoot.Color.Equals(colorShot)) {
+		if (blocToShoot.Destructible && blocToShoot.Color.Equals(colorShot))
+		{
+			blocToShoot.DestroyBloc();
+		}
+
+		/*if (blocToShoot.Destructible && blocToShoot.Color.Equals(colorShot)) {
 			List<Bloc> blocsToDestroy = Tower.GetBlocsToDestroy(blocToShoot);
 			foreach (var bloc in blocsToDestroy) {
-				bloc.Destroy();
+				bloc.DestroyBloc();
 			}
-		}
+		}*/
 	}
 
 	#endregion
@@ -259,7 +290,7 @@ public class GameManager : Singleton<GameManager>
 	#region Camera
 
 	public void SetPlayCameraY(float value) {
-		_yCameraTarget = value;
+		_yCameraTarget = Mathf.Max(value, GameData.YLowestCamera);
 	}
 
 	public void UpdateCamera() {

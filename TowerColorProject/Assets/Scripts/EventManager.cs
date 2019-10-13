@@ -55,4 +55,5 @@ public class EventList
 	public static string OnShotFired = "OnShotFired";
 	public static string OnDrawNewBall = "OnDrawNewBall";
 	public static string OnBlocDestroyed = "OnBlocDestroyed";
+	public static string OnScoreUpdated = "OnScoreUpdated";
 }
