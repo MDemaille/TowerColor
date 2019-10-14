@@ -54,6 +54,7 @@ public class EventList
 	public static string OnGamePhaseChanged = "OnGamePhaseChanged";
 	public static string OnShotFired = "OnShotFired";
 	public static string OnDrawNewBall = "OnDrawNewBall";
+	public static string OnBlocDestroyedFromHit = "OnBlocDestroyedFromHit";
 	public static string OnBlocDestroyed = "OnBlocDestroyed";
 	public static string OnScoreUpdated = "OnScoreUpdated";
 }

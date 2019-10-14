@@ -25,7 +25,7 @@ public class GameManager : Singleton<GameManager>
 	[Header("Scene References")]
 	public Camera MainCamera;
 	public Transform CameraTargetTransform;
-	public Transform CameraShowPhasePosition;
+	public Transform CameraStartPosition;
 	public Transform CameraPlayPhasePosition;
 	public Transform ShotSpawn;
 
@@ -40,6 +40,7 @@ public class GameManager : Singleton<GameManager>
 	public float CameraSpeed = 50f;
 	private float _yCameraTarget = 0f;
 	private Vector3 velocity = Vector3.zero;
+	private float YVelocity = 0f;
 
 	//Shots
 	public int NbShotsAvailable { get; private set; }
@@ -76,6 +77,8 @@ public class GameManager : Singleton<GameManager>
 
 	public void InitLevel(int levelId)
 	{
+		SetGamePhase(GamePhase.Init);
+
 		CurrentLevel = levelId;
 		PlayerPrefs.SetInt(_playerPrefLevelData, CurrentLevel);
 		PlayerPrefs.Save();
@@ -123,7 +126,17 @@ public class GameManager : Singleton<GameManager>
 
 	public IEnumerator ShowLevelCoroutine()
 	{
-		yield return UIManager.Instance.FadeScreen(Color.clear, 0.5f);
+		Tower.SetTowerVisible(false);
+		MainCamera.transform.position = CameraStartPosition.position;
+		yield return UIManager.Instance.FadeScreen(Color.clear, 1f);
+
+		StartCoroutine(Tower.ShowBuildTowerAnimation());
+		yield return new WaitForSeconds(1f);
+		
+		UpdateCameraTargetHeight();
+
+		yield return BlendCameraPosition(MainCamera.transform.position, CameraTargetTransform.position, 1f);
+
 		DrawNewBall();
 		SetGamePhase(GamePhase.Play);
 		//Camera placement
@@ -331,19 +344,42 @@ public class GameManager : Singleton<GameManager>
 			}
 		}
 
-
+		UpdateCameraTargetHeight();
 		Vector3 smoothPosition = Vector3.SmoothDamp(MainCamera.transform.position, CameraTargetTransform.position, ref velocity, 0.2f);
 
 		//Because the smooth position does not move according to a circle, we apply a translation to keep it at the right distance
-		CameraTargetTransform.position = new Vector3(CameraTargetTransform.position.x, _yCameraTarget, CameraTargetTransform.position.z);
 		Vector3 centerToCameraTarget = CameraTargetTransform.position - new Vector3(0, CameraTargetTransform.position.y, 0);
-
 		Vector3 finalPosition = (smoothPosition - new Vector3(0, smoothPosition.y, 0)).normalized * centerToCameraTarget.magnitude;
 
-		finalPosition += new Vector3(0, _yCameraTarget, 0);
+		float smoothY = Mathf.SmoothDamp(MainCamera.transform.position.y, CameraTargetTransform.transform.position.y,
+			ref YVelocity, 0.2f);
+
+		finalPosition += new Vector3(0, smoothY, 0);
 
 		MainCamera.transform.position = finalPosition;//CameraTargetTransform.position;//Vector3.Lerp(CameraTransform.position, CameraTargetTransform.position, Time.smoothDeltaTime);//Vector3.SmoothDamp(CameraTransform.position, CameraTargetTransform.position, ref velocity, 0.2f);
 		MainCamera.transform.LookAt(new Vector3(0, MainCamera.transform.position.y, 0));
+	}
+
+	public void UpdateCameraTargetHeight()
+	{
+		CameraTargetTransform.position = new Vector3(CameraTargetTransform.position.x, _yCameraTarget, CameraTargetTransform.position.z);
+	}
+
+	public IEnumerator BlendCameraPosition(Vector3 startPosition, Vector3 endPosition, float time)
+	{
+		float timer = 0f;
+		float progression = 0f;
+	
+		while (timer < time) {
+			timer += Time.deltaTime;
+			progression = timer / time;
+
+			MainCamera.transform.position = Vector3.Lerp(startPosition, endPosition, progression);
+
+			yield return new WaitForSeconds(Time.deltaTime);
+		}
+
+		MainCamera.transform.position = endPosition;
 	}
 
 	#endregion

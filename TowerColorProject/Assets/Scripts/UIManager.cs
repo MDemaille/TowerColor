@@ -14,6 +14,8 @@ public class UIManager : Singleton<UIManager>
 
 	public Image FadeImage;
 
+	public Text TouchToStartText;
+
 	[Header("Level and Score")]
 
 	public Image BackgroundCurrentLevel;
@@ -56,11 +58,24 @@ public class UIManager : Singleton<UIManager>
     void SetLevelPanel(object obj)
     {
 	    GamePhase gamePhase = (GamePhase) obj;
+
+	    if (gamePhase == GamePhase.Init)
+	    {
+			SphereToShoot.transform.localScale = Vector3.zero;
+			NbShotsText.gameObject.SetActive(false);
+	    }
+
 	    if (gamePhase == GamePhase.Show)
 	    {
 		    TextCurrentLevel.text = GameManager.Instance.CurrentLevel.ToString();
 		    TextNextLevel.text = (GameManager.Instance.CurrentLevel + 1).ToString();
 		    UpdateScoreUI(null);
+		}
+
+	    if (gamePhase == GamePhase.Play)
+	    {
+		    SphereToShoot.transform.localScale = Vector3.one * 0.1f;
+		    NbShotsText.gameObject.SetActive(true);
 		}
 
 	    if (gamePhase == GamePhase.LevelEnd)

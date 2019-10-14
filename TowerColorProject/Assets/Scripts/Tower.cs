@@ -85,6 +85,35 @@ public class Tower : MonoBehaviour
 		UpdateDestructibleBlocs();
 	}
 
+	public List<BlocColor> GetColorsAvailableInTower() {
+		List<BlocColor> colors = new List<BlocColor>();
+
+		for (int i = 0; i < _tower.Count; i++) {
+			if (!colors.Contains(_tower[i].Color))
+				colors.Add(_tower[i].Color);
+
+			if (colors.Count >= _nbColorInTower)
+				break;
+		}
+
+		return colors;
+	}
+
+	public void RefreshTowerColors(bool showBlackBlocsIfNotDestructible)
+	{
+		foreach (var bloc in _tower)
+		{
+			bloc.ApplyColor(showBlackBlocsIfNotDestructible);			
+		}
+	}
+
+	public void SetTowerVisible(bool visible)
+	{
+		foreach (var bloc in _tower) {
+			bloc.SetVisible(visible);
+		}
+	}
+
 	//return special ratio updated to fit score
 	public float GetDestroyedBlocRatioForScore()
 	{
@@ -98,22 +127,6 @@ public class Tower : MonoBehaviour
 		}
 
 		return (float)cptDestroyedBlocs /(float) (_tower.Count - NB_BLOC_PER_LINE );
-	}
-
-	public List<BlocColor> GetColorsAvailableInTower()
-	{
-		List<BlocColor> colors = new List<BlocColor>();
-
-		for (int i = 0; i < _tower.Count; i++)
-		{
-			if(!colors.Contains(_tower[i].Color))
-				colors.Add(_tower[i].Color);
-
-			if (colors.Count >= _nbColorInTower)
-				break;
-		}
-
-		return colors;
 	}
 
 	//Called when the play phase starts and each time a bloc is considered destroyed
@@ -145,11 +158,9 @@ public class Tower : MonoBehaviour
 		for (int x = 0; x < _nbBlocPerLine; x++) {
 			Bloc blocToCheck = GetBloc(x, y);
 			if (blocToCheck != null && !blocToCheck.Destroyed)
-				blocToCheck.SetDestructible(destructible);
-			else
 			{
-				//GetBloc(x, y);
-				//Debug.Log("Hello");
+				blocToCheck.SetDestructible(destructible);
+				blocToCheck.ApplyColor(true);
 			}
 		}
 	}
@@ -212,51 +223,28 @@ public class Tower : MonoBehaviour
 		return blocsToDestroy;
 	}
 
-	/*
-	//Return the blocs to destroy if a bloc has been hit
-	public List<Bloc> GetBlocsToDestroy(Bloc blocHit) {
-
-		List<Bloc> blocsToDestroy = new List<Bloc>();
-		blocsToDestroy.Add(blocHit);
-
-		List<Bloc> blocsToCheck = new List<Bloc>();
-		blocsToCheck.Add(blocHit);
-
-		//List<Bloc> blocsChecked = new List<Bloc>();
-		//blocsChecked.Add(blocHit);
-
-		while (blocsToCheck.Count > 0) {
-			Bloc blocNode = blocsToCheck[0];
-			blocsToCheck.RemoveAt(0);
-
-			Bloc UpBloc = GetBloc(blocNode.X, blocNode.Y + 1);
-			if (UpBloc != null && !UpBloc.Destroyed && UpBloc.Destructible && UpBloc.Color.Equals(blocHit.Color) && !blocsToDestroy.Contains(UpBloc)) {
-				blocsToDestroy.Add(UpBloc);
-				blocsToCheck.Add(UpBloc);
-			}
-
-			Bloc DownBloc = GetBloc(blocNode.X, blocNode.Y - 1);
-			if (DownBloc != null && !DownBloc.Destroyed && DownBloc.Destructible && DownBloc.Color.Equals(blocHit.Color) && !blocsToDestroy.Contains(DownBloc)) {
-				blocsToDestroy.Add(DownBloc);
-				blocsToCheck.Add(DownBloc);
-			}
-
-			Bloc LeftBloc = GetBloc(blocNode.X - 1, blocNode.Y);
-			if (LeftBloc != null && !LeftBloc.Destroyed && LeftBloc.Destructible && LeftBloc.Color.Equals(blocHit.Color) && !blocsToDestroy.Contains(LeftBloc)) {
-				blocsToDestroy.Add(LeftBloc);
-				blocsToCheck.Add(LeftBloc);
-			}
-
-			Bloc RightBloc = GetBloc(blocNode.X + 1, blocNode.Y);
-			if (RightBloc != null && !RightBloc.Destroyed && RightBloc.Destructible && RightBloc.Color.Equals(blocHit.Color) && !blocsToDestroy.Contains(RightBloc)) {
-				blocsToDestroy.Add(RightBloc);
-				blocsToCheck.Add(RightBloc);
+	public IEnumerator ShowBuildTowerAnimation()
+	{
+		SetTowerVisible(false);
+		RefreshTowerColors(false);
+		for(int y = 0 ; y<_height ; y++ ) { 
+			yield return new WaitForSeconds(0.05f);
+			for (int x = 0; x < NB_BLOC_PER_LINE; x++)
+			{
+				GetBloc(x,y).SetVisible(true);
 			}
 		}
 
-		return blocsToDestroy;
-	}*/
+		for (int y = 0; y < _height; y++) {
+			yield return new WaitForSeconds(0.05f);
+			for (int x = 0; x < NB_BLOC_PER_LINE; x++) {
+				GetBloc(x, y).ApplyColor(true);
+			}
+		}
 
+		yield return new WaitForSeconds(0.2f);
+		RefreshTowerColors(true);
 
+	}
 
 }

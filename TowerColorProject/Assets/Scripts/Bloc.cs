@@ -68,9 +68,25 @@ public class Bloc : MonoBehaviour
 		_startYRegistered = true;
 	}
 
+	public void SetVisible(bool visible)
+	{
+		BlocRenderer.enabled = visible;
+	}
+
 	//Todo Color
-	public void ApplyColor() {
-		BlocRenderer.material = Destructible ? GameManager.Instance.GameData.GetBlocColorMaterial(Color) : GameManager.Instance.GameData.MaterialBlack;
+	public void ApplyColor(bool setBlackIfNotDestructible = true) {
+
+		if (setBlackIfNotDestructible)
+		{
+			BlocRenderer.material = Destructible
+				? GameManager.Instance.GameData.GetBlocColorMaterial(Color)
+				: GameManager.Instance.GameData.MaterialBlack;
+		}
+		else
+		{
+			BlocRenderer.material = GameManager.Instance.GameData.GetBlocColorMaterial(Color);
+		}
+
 		//DestructionParticleRenderer.material = GameManager.Instance.GameData.GetBlocColorMaterial(Color);
 	}
 
@@ -78,13 +94,6 @@ public class Bloc : MonoBehaviour
 	{
 		Destructible = destructible;
 		TogglePhysics(destructible);
-		/*
-		if (destructible)
-			StartCoroutine(EnablePhysicsAfterTime());
-		else 
-			TogglePhysics(false);
-			*/
-		ApplyColor();
 	}
 
 	IEnumerator EnablePhysicsAfterTime()
@@ -113,9 +122,11 @@ public class Bloc : MonoBehaviour
 			//BlocRenderer.enabled = false;
 			//BlocCollider.enabled = false;
 
-			/*GameObject particleSystem = Instantiate(DestructionParticleSystem, transform.position, Quaternion.identity);
+			EventManager.TriggerEvent(EventList.OnBlocDestroyedFromHit);
+
+			GameObject particleSystem = Instantiate(DestructionParticleSystem, transform.position, Quaternion.identity);
 			ParticleSystemRenderer destructionParticleRenderer = particleSystem.GetComponent<ParticleSystemRenderer>();
-			destructionParticleRenderer.material = GameManager.Instance.GameData.GetBlocColorMaterial(Color);*/
+			destructionParticleRenderer.material = GameManager.Instance.GameData.GetBlocColorMaterial(Color);
 
 			Destroy(gameObject);
 
