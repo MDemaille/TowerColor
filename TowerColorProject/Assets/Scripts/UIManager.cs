@@ -63,18 +63,21 @@ public class UIManager : Singleton<UIManager>
 	    {
 			SphereToShoot.transform.localScale = Vector3.zero;
 			NbShotsText.gameObject.SetActive(false);
-	    }
+
+			BackgroundNextLevel.color = Color.white;
+			TextNextLevel.color = BackgroundCurrentLevel.color;
+		}
 
 	    if (gamePhase == GamePhase.Show)
 	    {
-		    TextCurrentLevel.text = GameManager.Instance.CurrentLevel.ToString();
-		    TextNextLevel.text = (GameManager.Instance.CurrentLevel + 1).ToString();
+		    TextCurrentLevel.text = (GameManager.Instance.CurrentLevel + 1).ToString();
+		    TextNextLevel.text = (GameManager.Instance.CurrentLevel + 2).ToString();
 		    UpdateScoreUI(null);
 		}
 
 	    if (gamePhase == GamePhase.Play)
 	    {
-		    SphereToShoot.transform.localScale = Vector3.one * 0.1f;
+		    SphereToShoot.transform.localScale = Vector3.one * 0.07f;
 		    NbShotsText.gameObject.SetActive(true);
 		}
 

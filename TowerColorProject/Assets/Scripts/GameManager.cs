@@ -29,6 +29,8 @@ public class GameManager : Singleton<GameManager>
 	public Transform CameraPlayPhasePosition;
 	public Transform ShotSpawn;
 
+	public GameObject VictoryParticleSystem;
+
 	public bool ColorBlindOption = false;
 
 	//Variables to handle game loop
@@ -127,7 +129,12 @@ public class GameManager : Singleton<GameManager>
 	public IEnumerator ShowLevelCoroutine()
 	{
 		Tower.SetTowerVisible(false);
+
 		MainCamera.transform.position = CameraStartPosition.position;
+		MainCamera.transform.LookAt(new Vector3(0, MainCamera.transform.position.y, 0));
+
+		CameraTargetTransform.position = MainCamera.transform.position;
+
 		yield return UIManager.Instance.FadeScreen(Color.clear, 1f);
 
 		StartCoroutine(Tower.ShowBuildTowerAnimation());
@@ -197,9 +204,18 @@ public class GameManager : Singleton<GameManager>
 
 	public IEnumerator LevelEndCoroutine()
 	{
+		VictoryParticleSystem.gameObject.SetActive(true);
+
+		yield return BlendCameraPosition(MainCamera.transform.position,
+			MainCamera.transform.position + (-1*MainCamera.transform.forward + MainCamera.transform.up), 0.1f);
+
 		UIManager.Instance.TextWin.gameObject.SetActive(true);
-		yield return new WaitForSeconds(1);
+
+		yield return new WaitUntil(()=>Input.GetMouseButtonDown(0) || Input.touchCount > 0);
+
 		yield return UIManager.instance.FadeScreen(Color.white, 0.5f);
+
+		VictoryParticleSystem.gameObject.SetActive(false);
 		UIManager.Instance.TextWin.gameObject.SetActive(false);
 		InitLevel(CurrentLevel);
 	}

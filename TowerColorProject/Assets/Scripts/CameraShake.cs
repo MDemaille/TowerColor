@@ -22,9 +22,20 @@ public class CameraShake : MonoBehaviour {
 	void Awake()
 	{
 		EventManager.SetEventListener(EventList.OnBlocDestroyedFromHit, Shake, true);
+		EventManager.SetEventListener(EventList.OnGamePhaseChanged, ShakeOnLevelEnd, true);
 	}
 
-	void Shake(object obj)
+	void ShakeOnLevelEnd(object obj)
+	{
+		GamePhase gamePhase = (GamePhase) obj;
+
+		if (gamePhase == GamePhase.LevelEnd)
+		{
+			Shake();
+		}
+	}
+
+	void Shake(object obj = null)
 	{
 		if (_isShaking)
 			return;
