@@ -41,7 +41,8 @@ public class Tower : MonoBehaviour
 
 		foreach (var bloc in _tower)
 		{
-			Destroy(bloc.gameObject);
+			if(bloc != null)
+				Destroy(bloc.gameObject);
 		}
 		_tower.Clear();
 
@@ -90,7 +91,10 @@ public class Tower : MonoBehaviour
 		int cptDestroyedBlocs = 0;
 		foreach (var bloc in _tower)
 		{
-			cptDestroyedBlocs += bloc.Destroyed ? 1 : 0;
+			if (bloc == null)
+				cptDestroyedBlocs++;
+			else
+				cptDestroyedBlocs += bloc.Destroyed ? 1 : 0;
 		}
 
 		return (float)cptDestroyedBlocs /(float) (_tower.Count - NB_BLOC_PER_LINE );
