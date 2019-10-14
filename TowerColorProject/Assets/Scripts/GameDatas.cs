@@ -12,6 +12,9 @@ public class GameDatas : ScriptableObject
 	[Header("Level parameters")]
 	public List<LevelStep> LevelSteps;
 
+	[Header("Combo Parameters")]
+	public List<ComboStep> ComboSteps;
+
 	[Header("Materials")]
 	public Material MaterialBlue;
 	public Material MaterialPurple;
@@ -36,6 +39,31 @@ public class GameDatas : ScriptableObject
 	public float TimeBetweenBlocDestruction = 0.1f;
 
 	public float TimeToFailLevelWhenOutOfShots = 3f;
+
+	public LevelStep GetParametersForLevel(int levelId) {
+		LevelStep currentStep = LevelSteps[0];
+		foreach (var gameDataLevelStep in LevelSteps) {
+			if (levelId >= gameDataLevelStep.LevelToApplyStep)
+				currentStep = gameDataLevelStep;
+			else
+				break;
+		}
+
+		return currentStep;
+	}
+
+	public ComboStep GetComboStep(int hit)
+	{
+		ComboStep currentStep = ComboSteps[0];
+		foreach (var comboStep in ComboSteps) {
+			if (hit >= comboStep.Count)
+				currentStep = comboStep;
+			else
+				break;
+		}
+
+		return currentStep;
+	}
 
 	//TODO : Color blind option
 	public Material GetBlocColorMaterial(BlocColor color) {
@@ -85,4 +113,11 @@ public class LevelStep
 	public int NbColors = 1;
 	public int NbLinesEnabled = 5;
 	public int NbShots = 10;
+}
+
+[System.Serializable]
+public class ComboStep
+{
+	public int Count = 0;
+	public string Label = "Cool !";
 }

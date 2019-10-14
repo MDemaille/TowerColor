@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections;
 using System.Collections.Generic;
+using DG.Tweening;
 using UnityEngine;
 using UnityEngine.EventSystems;
 using UnityEngine.UI;
@@ -35,8 +36,15 @@ public class UIManager : Singleton<UIManager>
 	private float _xStartScore;
 	private float _xEndScore;
 
+	[Header("Texts to show steps")]
 	public Text TextWin;
-  
+
+	[Header("Combo UI")]
+	public Text ComboCountText;
+	public Text ComboLabelText;
+
+	public List<GameObject> ComboMedals;
+
     void Awake()
     {
         RegisterToEvent(true);
@@ -53,6 +61,7 @@ public class UIManager : Singleton<UIManager>
 		EventManager.SetEventListener(EventList.OnDrawNewBall, UpdateLevelAndScoreColor, register);
 		EventManager.SetEventListener(EventList.OnGamePhaseChanged, SetLevelPanel, register);
 		EventManager.SetEventListener(EventList.OnBlocDestroyed, UpdateScoreUI, register);
+		EventManager.SetEventListener(EventList.OnComboCountUpdated, UpdateComboUI, register);
 	}
 
     void SetLevelPanel(object obj)
@@ -66,6 +75,11 @@ public class UIManager : Singleton<UIManager>
 
 			BackgroundNextLevel.color = Color.white;
 			TextNextLevel.color = BackgroundCurrentLevel.color;
+
+			foreach (var medal in ComboMedals)
+			{
+				medal.SetActive(false);
+			}
 		}
 
 	    if (gamePhase == GamePhase.Show)
@@ -83,6 +97,7 @@ public class UIManager : Singleton<UIManager>
 
 	    if (gamePhase == GamePhase.LevelEnd)
 	    {
+		    ScoreJaugeFill.fillAmount = 1f;
 		    BackgroundNextLevel.color = BackgroundCurrentLevel.color;
 		    TextNextLevel.color = Color.white;
 	    }
@@ -113,6 +128,41 @@ public class UIManager : Singleton<UIManager>
 		ScoreText.text = prctScore.ToString() + "%";
 
 		ScoreJaugeFill.fillAmount = GameManager.Instance.Score;
+    }
+
+    void UpdateComboUI(object obj)
+    {
+	    int comboCount = GameManager.Instance.ComboCount;
+
+	    if (comboCount > 0)
+	    {
+		    ComboCountText.gameObject.SetActive(true);
+		    ComboLabelText.gameObject.SetActive(true);
+			ComboCountText.text = comboCount + " HITS";
+			ComboStep step = GameManager.instance.GameData.GetComboStep(comboCount);
+			ComboLabelText.text = step.Label;
+		    ComboCountText.color =
+			    GameManager.Instance.GameData.GetBlocColorColorValue(GameManager.instance.LastDestroyedColor);
+
+		    int indexCombo = GameManager.instance.GameData.ComboSteps.IndexOf(step);
+		    if (indexCombo > 0 && indexCombo< ComboMedals.Count)
+		    {
+			    GameObject medal = ComboMedals[indexCombo - 1];
+			    if (!medal.activeSelf)
+			    {
+					medal.SetActive(true);
+					medal.transform.localScale = Vector3.zero;
+					medal.transform.DOScale(2f, 0.25f).OnComplete(() => { medal.transform.DOScale(1f, 0.25f); });
+					ComboLabelText.transform.DOScale(2f, 0.25f).OnComplete(() => { ComboLabelText.transform.DOScale(1f, 0.25f); });
+				}
+		    }
+
+	    }
+	    else
+	    {
+			ComboCountText.gameObject.SetActive(false);
+			ComboLabelText.gameObject.SetActive(false);
+	    }
     }
 
 	void UpdateNbShotText(object obj)

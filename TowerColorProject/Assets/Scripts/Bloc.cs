@@ -115,7 +115,7 @@ public class Bloc : MonoBehaviour
 		if (BlocRigidbody)
 			BlocRigidbody.mass = 0.1f;
 
-		EventManager.TriggerEvent(EventList.OnBlocDestroyed);
+		EventManager.TriggerEvent(EventList.OnBlocDestroyed, Color);
 
 		if (destroyFromHit)
 		{

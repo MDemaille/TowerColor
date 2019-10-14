@@ -47,6 +47,29 @@ MonoBehaviour:
     NbColors: 5
     NbLinesEnabled: 8
     NbShots: 22
+  ComboSteps:
+  - Count: 0
+    Label: 
+  - Count: 10
+    Label: Cool.
+  - Count: 20
+    Label: Great !
+  - Count: 30
+    Label: Awesome !!
+  - Count: 40
+    Label: UNSTOPPABLE !!!
+  - Count: 50
+    Label: Invincible !!!!
+  - Count: 60
+    Label: Master of Colors.
+  - Count: 70
+    Label: Master of Masters of colors !
+  - Count: 80
+    Label: No hope for the tower.
+  - Count: 90
+    Label: Rainbow Rider
+  - Count: 100
+    Label: Double Rainbow Rider
   MaterialBlue: {fileID: 2100000, guid: 52d6eb716f2146342b80084d0a146f4b, type: 2}
   MaterialPurple: {fileID: 2100000, guid: 6fdf0f1beb228c849b2bad10f34d83ba, type: 2}
   MaterialPink: {fileID: 2100000, guid: 2dc3fa8e875755e488774e6d44e64dc0, type: 2}
@@ -57,9 +80,9 @@ MonoBehaviour:
   ColorBlue: {r: 0, g: 0.105446815, b: 1, a: 1}
   ColorPurple: {r: 0.40815392, g: 0.024919916, b: 0.754717, a: 1}
   ColorPink: {r: 0.8679245, g: 0.028657902, b: 0.7198185, a: 1}
-  ColorGreen: {r: 0, g: 0.7735849, b: 0.10921198, a: 1}
-  ColorYellow: {r: 0.6981132, g: 0.67347395, b: 0, a: 1}
-  ColorRed: {r: 0.5377358, g: 0, b: 0, a: 1}
+  ColorGreen: {r: 0.020247417, g: 0.8584906, b: 0.13938864, a: 1}
+  ColorYellow: {r: 0.8867924, g: 0.8554939, b: 0, a: 1}
+  ColorRed: {r: 0.764151, g: 0, b: 0, a: 1}
   YDistanceToConsiderBlocDestroyed: 0.5
   YLowestCamera: 6
   BallTrajectory:

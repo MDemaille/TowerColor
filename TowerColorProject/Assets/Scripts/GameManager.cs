@@ -53,6 +53,11 @@ public class GameManager : Singleton<GameManager>
 
 	public float Score { get; private set; }
 
+	//Combo
+	public int ComboCount = 0;
+	public BlocColor LastDestroyedColor { get; private set; }
+
+	//LevelFail
 	private bool _failTimerEnabled = false;
 
 	public void Awake()
@@ -68,7 +73,7 @@ public class GameManager : Singleton<GameManager>
 
 	public void RegisterToEvents(bool register)
 	{
-		EventManager.SetEventListener(EventList.OnBlocDestroyed, UpdateScore, register);
+		EventManager.SetEventListener(EventList.OnBlocDestroyed, OnBlocDestroyed, register);
 	}
 
 	public void SetGamePhase(GamePhase gamePhase)
@@ -85,7 +90,7 @@ public class GameManager : Singleton<GameManager>
 		PlayerPrefs.SetInt(_playerPrefLevelData, CurrentLevel);
 		PlayerPrefs.Save();
 
-		LevelStep stepForcurrentLevel = GetParametersForLevel(CurrentLevel);
+		LevelStep stepForcurrentLevel = GameData.GetParametersForLevel(CurrentLevel);
 
 		Tower.InitTower(stepForcurrentLevel.NbLinesEnabled, stepForcurrentLevel.TowerHeight, stepForcurrentLevel.NbColors);
 		NbShotsAvailable = stepForcurrentLevel.NbShots;
@@ -93,25 +98,14 @@ public class GameManager : Singleton<GameManager>
 		UIManager.Instance.FadeImage.color = Color.white;
 
 		SetScore(0);
+		SetComboCount(0);
 
 		_failTimerEnabled = false;
 
 		ShowLevel();
 	}
 
-	public LevelStep GetParametersForLevel(int levelId)
-	{
-		LevelStep currentStep = GameData.LevelSteps[0];
-		foreach (var gameDataLevelStep in GameData.LevelSteps)
-		{
-			if (levelId >= gameDataLevelStep.LevelToApplyStep)
-				currentStep = gameDataLevelStep;
-			else
-				break;
-		}
-
-		return currentStep;
-	}
+	
 
 	public void SetScore(float score)
 	{
@@ -122,7 +116,6 @@ public class GameManager : Singleton<GameManager>
 	public void ShowLevel()
 	{
 		SetGamePhase(GamePhase.Show);
-
 		StartCoroutine(ShowLevelCoroutine());
 	}
 
@@ -146,13 +139,6 @@ public class GameManager : Singleton<GameManager>
 
 		DrawNewBall();
 		SetGamePhase(GamePhase.Play);
-		//Camera placement
-		//Fade from black
-		//Tutorial display
-		//Wait for touch
-		//Camera blend 
-		//Tower Lock section
-		//Begin play
 	}
 
 	public void Update()
@@ -174,7 +160,7 @@ public class GameManager : Singleton<GameManager>
 
 	#region Score
 
-	public void UpdateScore(object obj)
+	public void UpdateScore()
 	{
 		SetScore(Tower.GetDestroyedBlocRatioForScore());
 	}
@@ -242,7 +228,22 @@ public class GameManager : Singleton<GameManager>
 			CurrentShotColor = availableBlocColors[Random.Range(0, availableBlocColors.Count)];
 		}
 
+		ComboCount = 0;
+
 		EventManager.TriggerEvent(EventList.OnDrawNewBall);
+	}
+
+	public void OnBlocDestroyed(object obj)
+	{
+		LastDestroyedColor = (BlocColor) obj;
+		UpdateScore();
+		SetComboCount(ComboCount+1);
+	}
+
+	public void SetComboCount(int count)
+	{
+		ComboCount = count;
+		EventManager.TriggerEvent(EventList.OnComboCountUpdated);
 	}
 
 	public void GetShootInput() {
