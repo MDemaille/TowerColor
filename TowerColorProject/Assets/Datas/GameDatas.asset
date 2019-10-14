@@ -24,10 +24,10 @@ MonoBehaviour:
     NbShots: 10
   - LevelToApplyStep: 1
     TowerHeight: 15
-    NbColors: 3
+    NbColors: 2
     NbLinesEnabled: 8
     NbShots: 15
-  - LevelToApplyStep: 4
+  - LevelToApplyStep: 3
     TowerHeight: 18
     NbColors: 3
     NbLinesEnabled: 8

@@ -174,7 +174,13 @@ public class GameManager : Singleton<GameManager>
 	{
 		_failTimerEnabled = true;
 		int level = CurrentLevel;
-		yield return new WaitForSeconds(GameData.TimeToFailLevelWhenOutOfShots);
+		float timer = 0f;
+		while (timer < GameData.TimeToFailLevelWhenOutOfShots)
+		{
+			yield return new WaitForSeconds(Time.deltaTime);
+			timer += Time.deltaTime;
+			EventManager.TriggerEvent(EventList.OnFailTimerUpdate, timer/GameData.TimeToFailLevelWhenOutOfShots);
+		}
 
 		if(!IsVictoryScoreReached() && level == CurrentLevel)
 			LevelFail();
@@ -206,17 +212,23 @@ public class GameManager : Singleton<GameManager>
 		InitLevel(CurrentLevel);
 	}
 
-	public void LevelFail() {
-		SetGamePhase(GamePhase.LevelFail);
+	public void LevelFail()
+	{
+		StartCoroutine(LevelFailCoroutine());
+	}
 
+	public IEnumerator LevelFailCoroutine()
+	{
+		SetGamePhase(GamePhase.LevelFail);
+		yield return new WaitUntil(() => Input.GetMouseButtonDown(0) || Input.touchCount > 0);
 		InitLevel(CurrentLevel);
 	}
 
 	#endregion
 
-	#region Shoot
+		#region Shoot
 
-	public void DrawNewBall() {
+		public void DrawNewBall() {
 		//Get a list of still available colors in tower and pick a random one
 		List<BlocColor> availableBlocColors = Tower.GetColorsAvailableInTower();
 		if (availableBlocColors.Count == 0)
@@ -341,7 +353,8 @@ public class GameManager : Singleton<GameManager>
 
 		foreach (var bloc in tempBlocs) {
 			yield return new WaitForSeconds(timeBetweenDestruction);
-			bloc.DestroyBloc(true);
+			if(bloc != null)
+				bloc.DestroyBloc(true);
 		}
 	}
 

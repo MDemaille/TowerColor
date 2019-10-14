@@ -57,5 +57,6 @@ public class EventList
 	public static string OnBlocDestroyedFromHit = "OnBlocDestroyedFromHit";
 	public static string OnBlocDestroyed = "OnBlocDestroyed";
 	public static string OnScoreUpdated = "OnScoreUpdated";
-	public static string OnComboCountUpdated = "OnScoreUpdated";
+	public static string OnComboCountUpdated = "OnComboCountUpdated";
+	public static string OnFailTimerUpdate = "OnFailTimerUpdate";
 }

@@ -38,6 +38,11 @@ public class UIManager : Singleton<UIManager>
 
 	[Header("Texts to show steps")]
 	public Text TextWin;
+	public Text TextFail;
+
+	[Header("Fail Timer")]
+	public GameObject FailTimer;
+	public Image FailTimerJauge;
 
 	[Header("Combo UI")]
 	public Text ComboCountText;
@@ -62,6 +67,7 @@ public class UIManager : Singleton<UIManager>
 		EventManager.SetEventListener(EventList.OnGamePhaseChanged, SetLevelPanel, register);
 		EventManager.SetEventListener(EventList.OnBlocDestroyed, UpdateScoreUI, register);
 		EventManager.SetEventListener(EventList.OnComboCountUpdated, UpdateComboUI, register);
+		EventManager.SetEventListener(EventList.OnFailTimerUpdate, UpdateFailTimerUI, register);
 	}
 
     void SetLevelPanel(object obj)
@@ -80,7 +86,11 @@ public class UIManager : Singleton<UIManager>
 			{
 				medal.SetActive(false);
 			}
-		}
+
+			FailTimer.SetActive(false);
+			TextFail.gameObject.SetActive(false);
+			FailTimerJauge.fillAmount = 0f;
+	    }
 
 	    if (gamePhase == GamePhase.Show)
 	    {
@@ -100,8 +110,14 @@ public class UIManager : Singleton<UIManager>
 		    ScoreJaugeFill.fillAmount = 1f;
 		    BackgroundNextLevel.color = BackgroundCurrentLevel.color;
 		    TextNextLevel.color = Color.white;
+			FailTimer.SetActive(false);
 	    }
-    }
+
+	    if (gamePhase == GamePhase.LevelFail) {
+			TextFail.gameObject.SetActive(true);
+		    FailTimer.SetActive(false);
+	    }
+	}
 
     void UpdateLevelAndScoreColor(object obj)
     {
@@ -130,6 +146,14 @@ public class UIManager : Singleton<UIManager>
 		ScoreJaugeFill.fillAmount = GameManager.Instance.Score;
     }
 
+    void UpdateFailTimerUI(object obj)
+    {
+	    float progression = (float) obj;
+		FailTimer.gameObject.SetActive(true);
+
+		FailTimerJauge.fillAmount = progression;
+    }
+
     void UpdateComboUI(object obj)
     {
 	    int comboCount = GameManager.Instance.ComboCount;
@@ -138,32 +162,27 @@ public class UIManager : Singleton<UIManager>
 	    {
 		    ComboCountText.gameObject.SetActive(true);
 		    ComboLabelText.gameObject.SetActive(true);
-			ComboCountText.text = comboCount + " HITS";
-			ComboStep step = GameManager.instance.GameData.GetComboStep(comboCount);
-			ComboLabelText.text = step.Label;
+		    ComboCountText.text = comboCount + " HITS";
+		    ComboStep step = GameManager.instance.GameData.GetComboStep(comboCount);
+		    ComboLabelText.text = step.Label;
 		    ComboCountText.color =
 			    GameManager.Instance.GameData.GetBlocColorColorValue(GameManager.instance.LastDestroyedColor);
 
-			//quickfix 
-		    if (GameManager.Instance.CurrentGamePhase == GamePhase.Play)
+		    int indexCombo = GameManager.instance.GameData.ComboSteps.IndexOf(step);
+		    if (indexCombo > 0 && indexCombo < ComboMedals.Count)
 		    {
-			    int indexCombo = GameManager.instance.GameData.ComboSteps.IndexOf(step);
-			    if (indexCombo > 0 && indexCombo < ComboMedals.Count)
+			    GameObject medal = ComboMedals[indexCombo - 1];
+			    if (!medal.activeSelf)
 			    {
-				    GameObject medal = ComboMedals[indexCombo - 1];
-				    if (!medal.activeSelf)
+				    medal.SetActive(true);
+				    medal.transform.localScale = Vector3.zero;
+				    medal.transform.DOScale(2f, 0.25f).OnComplete(() => { medal.transform.DOScale(1f, 0.25f); });
+				    ComboLabelText.transform.DOScale(2f, 0.25f).OnComplete(() =>
 				    {
-					    medal.SetActive(true);
-					    medal.transform.localScale = Vector3.zero;
-					    medal.transform.DOScale(2f, 0.25f).OnComplete(() => { medal.transform.DOScale(1f, 0.25f); });
-					    ComboLabelText.transform.DOScale(2f, 0.25f).OnComplete(() =>
-					    {
-						    ComboLabelText.transform.DOScale(1f, 0.25f);
-					    });
-				    }
+					    ComboLabelText.transform.DOScale(1f, 0.25f);
+				    });
 			    }
 		    }
-
 	    }
 	    else
 	    {
