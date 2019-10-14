@@ -34,7 +34,7 @@ public class GameManager : Singleton<GameManager>
 	public bool ColorBlindOption = false;
 
 	//Variables to handle game loop
-	private GamePhase _currentGamePhase = GamePhase.Init;
+	public GamePhase CurrentGamePhase { get; private set; }
 	public int CurrentLevel { get; private set; }
 	private string _playerPrefLevelData = "LevelSave";
 
@@ -78,8 +78,8 @@ public class GameManager : Singleton<GameManager>
 
 	public void SetGamePhase(GamePhase gamePhase)
 	{
-		_currentGamePhase = gamePhase;
-		EventManager.TriggerEvent(EventList.OnGamePhaseChanged, _currentGamePhase);
+		CurrentGamePhase = gamePhase;
+		EventManager.TriggerEvent(EventList.OnGamePhaseChanged, CurrentGamePhase);
 	}
 
 	public void InitLevel(int levelId)
@@ -143,7 +143,7 @@ public class GameManager : Singleton<GameManager>
 
 	public void Update()
 	{
-		if (_currentGamePhase.Equals(GamePhase.Play))
+		if (CurrentGamePhase.Equals(GamePhase.Play))
 		{
 			UpdateCamera();
 			GetShootInput();
@@ -314,6 +314,9 @@ public class GameManager : Singleton<GameManager>
 		Vector3 startPosition = ShotSpawn.position;
 		while (timer < timeToReachTarget)
 		{
+			if (blocToShoot == null)
+				break;
+
 			timer += Time.deltaTime;
 			progression = timer / timeToReachTarget;
 

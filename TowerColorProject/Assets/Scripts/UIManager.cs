@@ -144,17 +144,24 @@ public class UIManager : Singleton<UIManager>
 		    ComboCountText.color =
 			    GameManager.Instance.GameData.GetBlocColorColorValue(GameManager.instance.LastDestroyedColor);
 
-		    int indexCombo = GameManager.instance.GameData.ComboSteps.IndexOf(step);
-		    if (indexCombo > 0 && indexCombo< ComboMedals.Count)
+			//quickfix 
+		    if (GameManager.Instance.CurrentGamePhase == GamePhase.Play)
 		    {
-			    GameObject medal = ComboMedals[indexCombo - 1];
-			    if (!medal.activeSelf)
+			    int indexCombo = GameManager.instance.GameData.ComboSteps.IndexOf(step);
+			    if (indexCombo > 0 && indexCombo < ComboMedals.Count)
 			    {
-					medal.SetActive(true);
-					medal.transform.localScale = Vector3.zero;
-					medal.transform.DOScale(2f, 0.25f).OnComplete(() => { medal.transform.DOScale(1f, 0.25f); });
-					ComboLabelText.transform.DOScale(2f, 0.25f).OnComplete(() => { ComboLabelText.transform.DOScale(1f, 0.25f); });
-				}
+				    GameObject medal = ComboMedals[indexCombo - 1];
+				    if (!medal.activeSelf)
+				    {
+					    medal.SetActive(true);
+					    medal.transform.localScale = Vector3.zero;
+					    medal.transform.DOScale(2f, 0.25f).OnComplete(() => { medal.transform.DOScale(1f, 0.25f); });
+					    ComboLabelText.transform.DOScale(2f, 0.25f).OnComplete(() =>
+					    {
+						    ComboLabelText.transform.DOScale(1f, 0.25f);
+					    });
+				    }
+			    }
 		    }
 
 	    }
