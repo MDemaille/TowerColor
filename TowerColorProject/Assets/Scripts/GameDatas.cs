@@ -21,6 +21,14 @@ public class GameDatas : ScriptableObject
 	public Material MaterialRed;
 	public Material MaterialBlack;
 
+	[Header("Color")]
+	public Color ColorBlue;
+	public Color ColorPurple;
+	public Color ColorPink;
+	public Color ColorGreen;
+	public Color ColorYellow;
+	public Color ColorRed;
+
 	[Header("Parameters")]
 	public float YDistanceToConsiderBlocDestroyed = 0.5f;
 	public float YLowestCamera = 7f;
@@ -46,6 +54,25 @@ public class GameDatas : ScriptableObject
 				return MaterialRed;
 			default:
 				return null;
+		}
+	}
+
+	public Color GetBlocColorColorValue(BlocColor color) {
+		switch (color) {
+			case (BlocColor.Blue):
+				return ColorBlue;
+			case (BlocColor.Purple):
+				return ColorPurple;
+			case (BlocColor.Pink):
+				return ColorPink;
+			case (BlocColor.Green):
+				return ColorGreen;
+			case (BlocColor.Yellow):
+				return ColorYellow;
+			case (BlocColor.Red):
+				return ColorRed;
+			default:
+				return Color.black;
 		}
 	}
 }

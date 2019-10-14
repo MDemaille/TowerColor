@@ -72,13 +72,25 @@ public class Bloc : MonoBehaviour
 	public void SetDestructible(bool destructible)
 	{
 		Destructible = destructible;
-		TogglePhysics(Destructible);
+
+		if(destructible)
+			StartCoroutine(EnablePhysicsAfterTime());
+		else 
+			TogglePhysics(false);
+
 		ApplyColor();
+	}
+
+	IEnumerator EnablePhysicsAfterTime()
+	{
+		yield return new WaitForSeconds(1f);
+		TogglePhysics(true);
 	}
 
 	public void TogglePhysics(bool toggle)
 	{
-		BlocRigidbody.isKinematic = !toggle;
+		if(BlocRigidbody)
+			BlocRigidbody.isKinematic = !toggle;
 	}
 
 	public void DestroyBloc(bool destroyFromHit = true)

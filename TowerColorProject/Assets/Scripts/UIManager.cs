@@ -5,14 +5,17 @@ using UnityEngine;
 using UnityEngine.EventSystems;
 using UnityEngine.UI;
 
-public class UIManager : MonoBehaviour
+public class UIManager : Singleton<UIManager>
 {
 	public GameObject SphereToShoot;
 	public Renderer SphereToShootRenderer;
 
 	public Text NbShotsText;
 
+	public Image FadeImage;
+
 	[Header("Level and Score")]
+
 	public Image BackgroundCurrentLevel;
 	public Text TextCurrentLevel;
 	public RectTransform ScoreJauge;
@@ -29,6 +32,8 @@ public class UIManager : MonoBehaviour
 
 	private float _xStartScore;
 	private float _xEndScore;
+
+	public Text TextWin;
   
     void Awake()
     {
@@ -51,16 +56,34 @@ public class UIManager : MonoBehaviour
     void SetLevelPanel(object obj)
     {
 	    GamePhase gamePhase = (GamePhase) obj;
-	    if (gamePhase == GamePhase.Play)
+	    if (gamePhase == GamePhase.Show)
 	    {
 		    TextCurrentLevel.text = GameManager.Instance.CurrentLevel.ToString();
 		    TextNextLevel.text = (GameManager.Instance.CurrentLevel + 1).ToString();
 		    UpdateScoreUI(null);
 		}
+
+	    if (gamePhase == GamePhase.LevelEnd)
+	    {
+		    BackgroundNextLevel.color = BackgroundCurrentLevel.color;
+		    TextNextLevel.color = Color.white;
+	    }
     }
 
-    void UpdateLevelAndScoreColor(object obj) {
+    void UpdateLevelAndScoreColor(object obj)
+    {
+	    Color newColor = GameManager.Instance.GameData.GetBlocColorColorValue(GameManager.Instance.CurrentShotColor);
+	    BackgroundCurrentLevel.color = newColor;
+	    ScoreJaugeBackground.color = newColor;
+	    BorderNextLevel.color = newColor;
+	    ScoreJaugeBackground.color = newColor;
+	    ScoreJaugeFill.color = newColor;
+	    TextNextLevel.color = newColor;
 
+	    BackgroundNextLevel.color = Color.white;
+
+	    JointScore.color = newColor;
+	    BackgroundScore.color = newColor;
     }
 
     void UpdateScoreUI(object obj)
@@ -82,6 +105,24 @@ public class UIManager : MonoBehaviour
 	void UpdateSphereToShoot(object obj)
 	{
 		SphereToShootRenderer.material = GameManager.Instance.GameData.GetBlocColorMaterial(GameManager.Instance.CurrentShotColor);
+	}
+
+	public IEnumerator FadeScreen(Color colorTarget, float time)
+	{
+		float timer = 0f;
+		float progression = 0f;
+		Color starColor = FadeImage.color;
+		while (timer < time) {
+			timer += Time.deltaTime;
+			progression = timer / time;
+
+			FadeImage.color = Color.Lerp(starColor, colorTarget, progression);
+
+			yield return new WaitForSeconds(Time.deltaTime);
+		}
+
+		FadeImage.color = colorTarget;
+
 	}
 
 }

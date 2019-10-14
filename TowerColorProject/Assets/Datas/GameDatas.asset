@@ -29,10 +29,10 @@ MonoBehaviour:
     NbColors: 3
     NbLinesEnabled: 5
     NbShots: 13
-  - TowerHeight: 20
+  - TowerHeight: 15
     NbColors: 4
-    NbLinesEnabled: 5
-    NbShots: 15
+    NbLinesEnabled: 7
+    NbShots: 20
   MaterialBlue: {fileID: 2100000, guid: 52d6eb716f2146342b80084d0a146f4b, type: 2}
   MaterialPurple: {fileID: 2100000, guid: 6fdf0f1beb228c849b2bad10f34d83ba, type: 2}
   MaterialPink: {fileID: 2100000, guid: 2dc3fa8e875755e488774e6d44e64dc0, type: 2}
@@ -40,6 +40,12 @@ MonoBehaviour:
   MaterialYellow: {fileID: 2100000, guid: 4a1e72bf47b334e4b80cf614354ff035, type: 2}
   MaterialRed: {fileID: 2100000, guid: 328dbc688068e9d46aafa53599079444, type: 2}
   MaterialBlack: {fileID: 2100000, guid: 430cfaf1b7cdf904ba121467c9294f91, type: 2}
+  ColorBlue: {r: 0, g: 0.105446815, b: 1, a: 1}
+  ColorPurple: {r: 0.40815392, g: 0.024919916, b: 0.754717, a: 1}
+  ColorPink: {r: 0.8679245, g: 0.028657902, b: 0.7198185, a: 1}
+  ColorGreen: {r: 0, g: 0.7735849, b: 0.10921198, a: 1}
+  ColorYellow: {r: 0.6981132, g: 0.67347395, b: 0, a: 1}
+  ColorRed: {r: 0.5377358, g: 0, b: 0, a: 1}
   YDistanceToConsiderBlocDestroyed: 0.5
   YLowestCamera: 6
   BallTrajectory:

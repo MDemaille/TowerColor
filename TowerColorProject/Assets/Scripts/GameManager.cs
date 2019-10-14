@@ -55,7 +55,7 @@ public class GameManager : Singleton<GameManager>
 
 	public void Awake()
 	{
-		CurrentLevel = PlayerPrefs.GetInt(_playerPrefLevelData);
+		CurrentLevel = 0; // PlayerPrefs.GetInt(_playerPrefLevelData);
 
 		//TODO : Fade to black
 		RegisterToEvents(true);
@@ -84,14 +84,13 @@ public class GameManager : Singleton<GameManager>
 		Tower.InitTower(infos.NbLinesEnabled, infos.TowerHeight, infos.NbColors);
 		NbShotsAvailable = infos.NbShots;
 
+		UIManager.Instance.FadeImage.color = Color.white;
+
 		SetScore(0);
 
 		_failTimerEnabled = false;
 
-		//ShowLevel();
-		SetGamePhase(GamePhase.Play);
-		DrawNewBall();
-
+		ShowLevel();
 	}
 
 	public void SetScore(float score)
@@ -109,6 +108,9 @@ public class GameManager : Singleton<GameManager>
 
 	public IEnumerator ShowLevelCoroutine()
 	{
+		yield return UIManager.Instance.FadeScreen(Color.clear, 0.5f);
+		DrawNewBall();
+		SetGamePhase(GamePhase.Play);
 		//Camera placement
 		//Fade from black
 		//Tutorial display
@@ -116,7 +118,6 @@ public class GameManager : Singleton<GameManager>
 		//Camera blend 
 		//Tower Lock section
 		//Begin play
-		yield return null;
 	}
 
 	public void Update()
@@ -154,7 +155,7 @@ public class GameManager : Singleton<GameManager>
 		int level = CurrentLevel;
 		yield return new WaitForSeconds(GameData.TimeToFailLevelWhenOutOfShots);
 
-		if(!IsVictoryScoreReached())
+		if(!IsVictoryScoreReached() && level == CurrentLevel)
 			LevelFail();
 	}
 
@@ -163,6 +164,15 @@ public class GameManager : Singleton<GameManager>
 		SetGamePhase(GamePhase.LevelEnd);
 
 		CurrentLevel++;
+		StartCoroutine(LevelEndCoroutine());
+	}
+
+	public IEnumerator LevelEndCoroutine()
+	{
+		UIManager.Instance.TextWin.gameObject.SetActive(true);
+		yield return new WaitForSeconds(1);
+		yield return UIManager.instance.FadeScreen(Color.white, 0.5f);
+		UIManager.Instance.TextWin.gameObject.SetActive(false);
 		InitLevel(GameData.LevelInfos[CurrentLevel], CurrentLevel);
 	}
 
