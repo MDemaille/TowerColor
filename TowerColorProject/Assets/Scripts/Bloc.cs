@@ -36,7 +36,13 @@ public class Bloc : MonoBehaviour
 	public float StartY { get; private set; }
 	private bool _startYRegistered = false;
 
-	private List<Bloc> _neighborsBlocs = new List<Bloc>();
+	public List<Bloc> NeighborsBlocs { get; private set; }
+
+	void Awake()
+	{
+		NeighborsBlocs = new List<Bloc>();
+		BlocRigidbody.centerOfMass = new Vector3(0, -0.6f,0);
+	}
 
 	void Update()
 	{
@@ -48,13 +54,13 @@ public class Bloc : MonoBehaviour
 
 	public void AddNeighbor(Bloc bloc)
 	{
-		if(!_neighborsBlocs.Contains(bloc))
-			_neighborsBlocs.Add(bloc);
+		if(!NeighborsBlocs.Contains(bloc))
+			NeighborsBlocs.Add(bloc);
 	}
 
 	public void RemoveNeighbor(Bloc bloc)
 	{
-		_neighborsBlocs.Remove(bloc);
+		NeighborsBlocs.Remove(bloc);
 	}
 
 	public void RegisterStartY()
@@ -72,12 +78,13 @@ public class Bloc : MonoBehaviour
 	public void SetDestructible(bool destructible)
 	{
 		Destructible = destructible;
-
-		if(destructible)
+		TogglePhysics(destructible);
+		/*
+		if (destructible)
 			StartCoroutine(EnablePhysicsAfterTime());
 		else 
 			TogglePhysics(false);
-
+			*/
 		ApplyColor();
 	}
 
@@ -97,15 +104,19 @@ public class Bloc : MonoBehaviour
 	{
 		Destroyed = true;
 
+		if (BlocRigidbody)
+			BlocRigidbody.mass = 0.1f;
+
 		if (destroyFromHit)
 		{
 			BlocRenderer.enabled = false;
 			BlocCollider.enabled = false;
-			Destroy(BlocRigidbody);
 
-			DestructionParticleSystem.gameObject.SetActive(true);
+			if(BlocRigidbody)
+				Destroy(BlocRigidbody);
 
-			StartCoroutine(DestroyNeighbors(GameManager.Instance.GameData.TimeBetweenBlocDestruction));
+			if(DestructionParticleSystem)
+				DestructionParticleSystem.gameObject.SetActive(true);
 
 			//gameObject.SetActive(false);
 		}
@@ -113,18 +124,6 @@ public class Bloc : MonoBehaviour
 		EventManager.TriggerEvent(EventList.OnBlocDestroyed);
 	}
 
-	public IEnumerator DestroyNeighbors(float timeBetweenDestruction)
-	{
-		List<Bloc> tempNeighbors = new List<Bloc>();
-		tempNeighbors.AddRange(_neighborsBlocs);
-
-		foreach (var neighbor in tempNeighbors) {
-			if (neighbor.Destructible && !neighbor.Destroyed && neighbor.Color.Equals(Color))
-			{
-				yield return new WaitForSeconds(timeBetweenDestruction);
-				neighbor.DestroyBloc(true);
-			}
-		}
-	}
+	
 
 }

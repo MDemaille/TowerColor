@@ -16,23 +16,37 @@ MonoBehaviour:
     type: 3}
   ShotPrefab: {fileID: 150031366240343868, guid: 658df8d6a71724e4db9513f877e915c9,
     type: 3}
-  LevelInfos:
-  - TowerHeight: 10
+  LevelSteps:
+  - LevelToApplyStep: 0
+    TowerHeight: 10
     NbColors: 2
     NbLinesEnabled: 10
     NbShots: 10
-  - TowerHeight: 12
+  - LevelToApplyStep: 1
+    TowerHeight: 15
     NbColors: 3
-    NbLinesEnabled: 6
-    NbShots: 11
-  - TowerHeight: 15
+    NbLinesEnabled: 8
+    NbShots: 15
+  - LevelToApplyStep: 4
+    TowerHeight: 18
     NbColors: 3
-    NbLinesEnabled: 5
-    NbShots: 13
-  - TowerHeight: 15
-    NbColors: 4
-    NbLinesEnabled: 7
+    NbLinesEnabled: 8
     NbShots: 20
+  - LevelToApplyStep: 9
+    TowerHeight: 18
+    NbColors: 4
+    NbLinesEnabled: 8
+    NbShots: 20
+  - LevelToApplyStep: 14
+    TowerHeight: 20
+    NbColors: 4
+    NbLinesEnabled: 8
+    NbShots: 22
+  - LevelToApplyStep: 24
+    TowerHeight: 20
+    NbColors: 5
+    NbLinesEnabled: 8
+    NbShots: 22
   MaterialBlue: {fileID: 2100000, guid: 52d6eb716f2146342b80084d0a146f4b, type: 2}
   MaterialPurple: {fileID: 2100000, guid: 6fdf0f1beb228c849b2bad10f34d83ba, type: 2}
   MaterialPink: {fileID: 2100000, guid: 2dc3fa8e875755e488774e6d44e64dc0, type: 2}
@@ -81,5 +95,5 @@ MonoBehaviour:
     m_PreInfinity: 2
     m_PostInfinity: 2
     m_RotationOrder: 4
-  TimeBetweenBlocDestruction: 0.05
+  TimeBetweenBlocDestruction: 0.025
   TimeToFailLevelWhenOutOfShots: 3

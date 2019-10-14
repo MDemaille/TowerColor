@@ -5,16 +5,18 @@ using UnityEngine;
 
 public class Tower : MonoBehaviour
 {
+	private const float Y_START = 1.1f;
+	private const float BLOC_HEIGHT = 1.2f;
+	private const int NB_BLOC_PER_LINE = 15;
+	private const float RADIUS = 2.5f;
+
 	private List<Bloc> _tower = new List<Bloc>();
 	private int _nbBlocPerLine;
 	private int _height;
 	private int _nbColorInTower;
 	private int _nbLineEnabled;
 
-	private const float Y_START = 1.25f;
-	private const float BLOC_HEIGHT = 1.5f;
-	private const int NB_BLOC_PER_LINE = 15;
-	private const float RADIUS = 2.5f;
+	private List<BlocColor> _towerColors = new List<BlocColor>();
 
 	public void Awake()
 	{
@@ -37,12 +39,22 @@ public class Tower : MonoBehaviour
 		_height = height;
 		_nbColorInTower = nbColor;
 
-		//STEP 1 : CREATE THE TOWER DATA
 		foreach (var bloc in _tower)
 		{
 			Destroy(bloc.gameObject);
 		}
 		_tower.Clear();
+
+		//Pick random colors to create variations
+		_towerColors.Clear();
+		List<BlocColor> availableColors = new List<BlocColor>{BlocColor.Blue, BlocColor.Green, BlocColor.Pink, BlocColor.Purple, BlocColor.Red, BlocColor.Yellow};
+		for(int i = 0; i < nbColor; i++)
+		{
+			int colorPicked = Random.Range(0,availableColors.Count);
+			_towerColors.Add(availableColors[colorPicked]);
+			availableColors.RemoveAt(colorPicked);
+		}
+
 
 		for (int y = 0; y < _height; y++) {
 			for (int x = 0; x < _nbBlocPerLine ; x++) {
@@ -60,7 +72,7 @@ public class Tower : MonoBehaviour
 				currentBloc.Id = y * _nbBlocPerLine + x;
 				currentBloc.Y = y;
 				currentBloc.X = x;
-				currentBloc.Color = (BlocColor)Random.Range(0, nbColor);
+				currentBloc.Color = _towerColors[Random.Range(0, _towerColors.Count)];
 				currentBloc.ApplyColor();
 				currentBloc.TogglePhysics(false);
 				currentBloc.RegisterStartY();
@@ -108,7 +120,7 @@ public class Tower : MonoBehaviour
 		{
 			if (!isLineDestroyed(y))
 			{
-				indexLastDestructibleLine = y - _nbLineEnabled;
+				indexLastDestructibleLine = y - (_nbLineEnabled-1);
 				break;
 			}
 		}
@@ -170,6 +182,34 @@ public class Tower : MonoBehaviour
 	}
 
 	//Return the blocs to destroy if a bloc has been hit
+	public List<Bloc> GetBlocsToDestroy(Bloc blocHit)
+	{
+		List<Bloc> blocsToDestroy = new List<Bloc>();
+		blocsToDestroy.Add(blocHit);
+
+		List<Bloc> blocsToCheck = new List<Bloc>();
+		blocsToCheck.Add(blocHit);
+
+		while (blocsToCheck.Count > 0)
+		{
+			Bloc blocNode = blocsToCheck[0];
+			blocsToCheck.RemoveAt(0);
+
+			for (int i = 0; i < blocNode.NeighborsBlocs.Count; i++)
+			{
+				Bloc currentBloc = blocNode.NeighborsBlocs[i];
+				if (currentBloc != null && currentBloc.Destructible && currentBloc.Color.Equals(blocHit.Color) && !blocsToDestroy.Contains(currentBloc)) {
+					blocsToDestroy.Add(currentBloc);
+					blocsToCheck.Add(currentBloc);
+				}
+			}
+		}
+
+		return blocsToDestroy;
+	}
+
+	/*
+	//Return the blocs to destroy if a bloc has been hit
 	public List<Bloc> GetBlocsToDestroy(Bloc blocHit) {
 
 		List<Bloc> blocsToDestroy = new List<Bloc>();
@@ -211,7 +251,7 @@ public class Tower : MonoBehaviour
 		}
 
 		return blocsToDestroy;
-	}
+	}*/
 
 
 

@@ -55,13 +55,13 @@ public class GameManager : Singleton<GameManager>
 
 	public void Awake()
 	{
-		CurrentLevel = 0; // PlayerPrefs.GetInt(_playerPrefLevelData);
+		CurrentLevel = PlayerPrefs.GetInt(_playerPrefLevelData);
 
 		//TODO : Fade to black
 		RegisterToEvents(true);
 		
 
-		InitLevel(GameData.LevelInfos[CurrentLevel], CurrentLevel);
+		InitLevel(CurrentLevel);
 	}
 
 	public void RegisterToEvents(bool register)
@@ -75,14 +75,16 @@ public class GameManager : Singleton<GameManager>
 		EventManager.TriggerEvent(EventList.OnGamePhaseChanged, _currentGamePhase);
 	}
 
-	public void InitLevel(LevelInfos infos, int levelId)
+	public void InitLevel(int levelId)
 	{
 		CurrentLevel = levelId;
 		PlayerPrefs.SetInt(_playerPrefLevelData, CurrentLevel);
 		PlayerPrefs.Save();
 
-		Tower.InitTower(infos.NbLinesEnabled, infos.TowerHeight, infos.NbColors);
-		NbShotsAvailable = infos.NbShots;
+		LevelStep stepForcurrentLevel = GetParametersForLevel(CurrentLevel);
+
+		Tower.InitTower(stepForcurrentLevel.NbLinesEnabled, stepForcurrentLevel.TowerHeight, stepForcurrentLevel.NbColors);
+		NbShotsAvailable = stepForcurrentLevel.NbShots;
 
 		UIManager.Instance.FadeImage.color = Color.white;
 
@@ -91,6 +93,20 @@ public class GameManager : Singleton<GameManager>
 		_failTimerEnabled = false;
 
 		ShowLevel();
+	}
+
+	public LevelStep GetParametersForLevel(int levelId)
+	{
+		LevelStep currentStep = GameData.LevelSteps[0];
+		foreach (var gameDataLevelStep in GameData.LevelSteps)
+		{
+			if (levelId >= gameDataLevelStep.LevelToApplyStep)
+				currentStep = gameDataLevelStep;
+			else
+				break;
+		}
+
+		return currentStep;
 	}
 
 	public void SetScore(float score)
@@ -173,13 +189,13 @@ public class GameManager : Singleton<GameManager>
 		yield return new WaitForSeconds(1);
 		yield return UIManager.instance.FadeScreen(Color.white, 0.5f);
 		UIManager.Instance.TextWin.gameObject.SetActive(false);
-		InitLevel(GameData.LevelInfos[CurrentLevel], CurrentLevel);
+		InitLevel(CurrentLevel);
 	}
 
 	public void LevelFail() {
 		SetGamePhase(GamePhase.LevelFail);
 
-		InitLevel(GameData.LevelInfos[CurrentLevel], CurrentLevel);
+		InitLevel(CurrentLevel);
 	}
 
 	#endregion
@@ -281,17 +297,20 @@ public class GameManager : Singleton<GameManager>
 		}
 
 		Destroy(ball);
-		if (blocToShoot.Destructible && blocToShoot.Color.Equals(colorShot))
-		{
-			blocToShoot.DestroyBloc();
-		}
-
-		/*if (blocToShoot.Destructible && blocToShoot.Color.Equals(colorShot)) {
+		if (blocToShoot.Destructible && blocToShoot.Color.Equals(colorShot)) {
 			List<Bloc> blocsToDestroy = Tower.GetBlocsToDestroy(blocToShoot);
-			foreach (var bloc in blocsToDestroy) {
-				bloc.DestroyBloc();
-			}
-		}*/
+			StartCoroutine(DestroyBlocsWithIntervalTime(GameData.TimeBetweenBlocDestruction, blocsToDestroy));
+		}
+	}
+
+	public IEnumerator DestroyBlocsWithIntervalTime(float timeBetweenDestruction, List<Bloc> blocs) {
+		List<Bloc> tempBlocs = new List<Bloc>();
+		tempBlocs.AddRange(blocs);
+
+		foreach (var bloc in tempBlocs) {
+			yield return new WaitForSeconds(timeBetweenDestruction);
+			bloc.DestroyBloc(true);
+		}
 	}
 
 	#endregion

@@ -10,7 +10,7 @@ public class GameDatas : ScriptableObject
 	public GameObject ShotPrefab;
 
 	[Header("Level parameters")]
-	public List<LevelInfos> LevelInfos;
+	public List<LevelStep> LevelSteps;
 
 	[Header("Materials")]
 	public Material MaterialBlue;
@@ -78,8 +78,9 @@ public class GameDatas : ScriptableObject
 }
 
 [System.Serializable]
-public class LevelInfos
+public class LevelStep
 {
+	public int LevelToApplyStep = 0;
 	public int TowerHeight = 10;
 	public int NbColors = 1;
 	public int NbLinesEnabled = 5;
