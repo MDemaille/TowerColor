@@ -11,12 +11,7 @@ public enum GamePhase
 	LevelFail
 }
 
-public enum DisplayMode
-{
-	Normal,
-	ColorBlind
-}
-
+//Class that handles core gameplay, controls and camera
 public class GameManager : Singleton<GameManager>
 {
 	public GameDatas GameData;
@@ -26,21 +21,20 @@ public class GameManager : Singleton<GameManager>
 	public Camera MainCamera;
 	public Transform CameraTargetTransform;
 	public Transform CameraStartPosition;
-	public Transform CameraPlayPhasePosition;
 	public Transform ShotSpawn;
 
 	public GameObject VictoryParticleSystem;
-
-	//Variables to handle game loop
-	public GamePhase CurrentGamePhase { get; private set; }
-	public int CurrentLevel { get; private set; }
-	private string _playerPrefLevelData = "LevelSave";
 
 	[Header("Camera Movement")]
 	public float CameraSpeed = 50f;
 	private float _yCameraTarget = 0f;
 	private Vector3 velocity = Vector3.zero;
 	private float YVelocity = 0f;
+
+	//Variables to handle game loop
+	public GamePhase CurrentGamePhase { get; private set; }
+	public int CurrentLevel { get; private set; }
+	private string _playerPrefLevelData = "LevelSave";
 
 	//Shots
 	public int NbShotsAvailable { get; private set; }
@@ -56,17 +50,18 @@ public class GameManager : Singleton<GameManager>
 	public BlocColor LastDestroyedColor { get; private set; }
 	private int _maxComboCount = 0;
 
-	//LevelFail
+	//Level Fail
 	private bool _failTimerEnabled = false;
+
+
+
 
 	public void Awake()
 	{
 		CurrentLevel = PlayerPrefs.GetInt(_playerPrefLevelData);
 
-		//TODO : Fade to black
 		RegisterToEvents(true);
 		
-
 		InitLevel(CurrentLevel);
 	}
 
@@ -75,14 +70,31 @@ public class GameManager : Singleton<GameManager>
 		EventManager.SetEventListener(EventList.OnBlocDestroyed, OnBlocDestroyed, register);
 	}
 
-	public void SetGamePhase(GamePhase gamePhase)
+	public void Update()
 	{
+		if (CurrentGamePhase.Equals(GamePhase.Play))
+		{
+			UpdateCamera();
+			GetShootInput();
+			if (IsVictoryScoreReached()) {
+				LevelEnd();
+			}
+
+			if (!_failTimerEnabled && NbShotsAvailable <= 0)
+			{
+				StartCoroutine(TimerBeforeLevelFail());
+			}
+		}
+	}
+
+	#region Game Phases and Coroutine
+
+	public void SetGamePhase(GamePhase gamePhase) {
 		CurrentGamePhase = gamePhase;
 		EventManager.TriggerEvent(EventList.OnGamePhaseChanged, CurrentGamePhase);
 	}
 
-	public void InitLevel(int levelId)
-	{
+	public void InitLevel(int levelId) {
 		SetGamePhase(GamePhase.Init);
 
 		CurrentLevel = levelId;
@@ -104,22 +116,13 @@ public class GameManager : Singleton<GameManager>
 
 		ShowLevel();
 	}
-	
 
-	public void SetScore(float score)
-	{
-		Score = score;
-		EventManager.TriggerEvent(EventList.OnScoreUpdated);
-	}
-
-	public void ShowLevel()
-	{
+	public void ShowLevel() {
 		SetGamePhase(GamePhase.Show);
 		StartCoroutine(ShowLevelCoroutine());
 	}
 
-	public IEnumerator ShowLevelCoroutine()
-	{
+	public IEnumerator ShowLevelCoroutine() {
 		Tower.SetTowerVisible(false);
 
 		MainCamera.transform.position = CameraStartPosition.position;
@@ -131,7 +134,7 @@ public class GameManager : Singleton<GameManager>
 
 		StartCoroutine(Tower.ShowBuildTowerAnimation());
 		yield return new WaitForSeconds(1f);
-		
+
 		UpdateCameraTargetHeight();
 
 		yield return BlendCameraPosition(MainCamera.transform.position, CameraTargetTransform.position, 1f);
@@ -140,24 +143,67 @@ public class GameManager : Singleton<GameManager>
 		SetGamePhase(GamePhase.Play);
 	}
 
-	public void Update()
-	{
-		if (CurrentGamePhase.Equals(GamePhase.Play))
-		{
-			UpdateCamera();
-			GetShootInput();
-			if (IsVictoryScoreReached()) {
-				LevelEnd();
-			}
+	public void LevelEnd() {
+		SetGamePhase(GamePhase.LevelEnd);
 
-			if (!_failTimerEnabled && NbShotsAvailable <= 0)
-			{
-				StartCoroutine(TimerBeforeLevelFail());
-			}
-		}
+		CurrentLevel++;
+		StartCoroutine(LevelEndCoroutine());
 	}
 
+	public IEnumerator LevelEndCoroutine() {
+		VictoryParticleSystem.gameObject.SetActive(true);
+
+		yield return BlendCameraPosition(MainCamera.transform.position,
+			MainCamera.transform.position + (-1 * MainCamera.transform.forward + MainCamera.transform.up), 0.1f);
+
+		UIManager.Instance.TextWin.gameObject.SetActive(true);
+
+		EventManager.TriggerEvent(EventList.OnMaxComboCountShow, _maxComboCount);
+
+		yield return new WaitUntil(() => Input.GetMouseButtonDown(0) || Input.touchCount > 0);
+
+		yield return UIManager.instance.FadeScreen(Color.white, 0.5f);
+
+		VictoryParticleSystem.gameObject.SetActive(false);
+		UIManager.Instance.TextWin.gameObject.SetActive(false);
+		InitLevel(CurrentLevel);
+	}
+
+	public IEnumerator TimerBeforeLevelFail() {
+		_failTimerEnabled = true;
+		int level = CurrentLevel;
+		float timer = 0f;
+		while (timer < GameData.TimeToFailLevelWhenOutOfShots) {
+			if (CurrentGamePhase == GamePhase.LevelEnd)
+				yield break;
+
+			yield return new WaitForSeconds(Time.deltaTime);
+			timer += Time.deltaTime;
+			EventManager.TriggerEvent(EventList.OnFailTimerUpdate, timer / GameData.TimeToFailLevelWhenOutOfShots);
+		}
+
+		if (!IsVictoryScoreReached() && level == CurrentLevel)
+			LevelFail();
+	}
+
+	public void LevelFail() {
+		StartCoroutine(LevelFailCoroutine());
+	}
+
+	public IEnumerator LevelFailCoroutine() {
+		SetGamePhase(GamePhase.LevelFail);
+		yield return new WaitUntil(() => Input.GetMouseButtonDown(0) || Input.touchCount > 0);
+		InitLevel(CurrentLevel);
+	}
+
+	#endregion
+
 	#region Score
+
+	public void SetScore(float score) {
+		Score = score;
+		EventManager.TriggerEvent(EventList.OnScoreUpdated);
+	}
 
 	public void UpdateScore()
 	{
@@ -169,72 +215,12 @@ public class GameManager : Singleton<GameManager>
 		return Score >= 1f;
 	}
 
-	public IEnumerator TimerBeforeLevelFail()
-	{
-		_failTimerEnabled = true;
-		int level = CurrentLevel;
-		float timer = 0f;
-		while (timer < GameData.TimeToFailLevelWhenOutOfShots)
-		{
-			if (CurrentGamePhase == GamePhase.LevelEnd)
-				yield break;
-
-			yield return new WaitForSeconds(Time.deltaTime);
-			timer += Time.deltaTime;
-			EventManager.TriggerEvent(EventList.OnFailTimerUpdate, timer/GameData.TimeToFailLevelWhenOutOfShots);
-		}
-
-		if(!IsVictoryScoreReached() && level == CurrentLevel)
-			LevelFail();
-	}
-
-	public void LevelEnd()
-	{
-		SetGamePhase(GamePhase.LevelEnd);
-
-		CurrentLevel++;
-		StartCoroutine(LevelEndCoroutine());
-	}
-
-	public IEnumerator LevelEndCoroutine()
-	{
-		VictoryParticleSystem.gameObject.SetActive(true);
-
-		yield return BlendCameraPosition(MainCamera.transform.position,
-			MainCamera.transform.position + (-1*MainCamera.transform.forward + MainCamera.transform.up), 0.1f);
-
-		UIManager.Instance.TextWin.gameObject.SetActive(true);
-
-		EventManager.TriggerEvent(EventList.OnMaxComboCountShow, _maxComboCount);
-
-		yield return new WaitUntil(()=>Input.GetMouseButtonDown(0) || Input.touchCount > 0);
-
-		yield return UIManager.instance.FadeScreen(Color.white, 0.5f);
-
-		VictoryParticleSystem.gameObject.SetActive(false);
-		UIManager.Instance.TextWin.gameObject.SetActive(false);
-		InitLevel(CurrentLevel);
-	}
-
-	public void LevelFail()
-	{
-		StartCoroutine(LevelFailCoroutine());
-	}
-
-	public IEnumerator LevelFailCoroutine()
-	{
-		SetGamePhase(GamePhase.LevelFail);
-		yield return new WaitUntil(() => Input.GetMouseButtonDown(0) || Input.touchCount > 0);
-		InitLevel(CurrentLevel);
-	}
-
 	#endregion
 
 	#region Shoot
 
 	public void DrawNewWeapon() {
 		float randomFloat = Random.Range(0f, 1f);
-
 		Weapon currentWeapon = GameData.GetWeapon(1);
 
 		foreach (var weapon in GameData.Weapons)
@@ -247,9 +233,7 @@ public class GameManager : Singleton<GameManager>
 		}
 
 		CurrentWeaponColors = Tower.GetRandomColorsAvailableInTower(currentWeapon.NbColorAffected);
-		
 		ComboCount = 0;
-
 		EventManager.TriggerEvent(EventList.OnDrawNewBall);
 	}
 

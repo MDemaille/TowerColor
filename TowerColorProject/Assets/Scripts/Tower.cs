@@ -113,7 +113,7 @@ public class Tower : MonoBehaviour
 			availableColors.RemoveAt(colorPicked);
 		}
 
-		//We complete with other colors if we have not enough left
+		//We complete with other colors if we have not enough left (since this method is mainly used to color weapon UI)
 		if(selectedColors.Count < count)
 		{
 			int cpt = 0;
@@ -176,7 +176,7 @@ public class Tower : MonoBehaviour
 			SetLineDestructible(y, y>=indexLastDestructibleLine);
 		}
 
-		//Update camera Y
+		//Update camera Y so we can see the destructible lines
 		Bloc MiddleBloc = GetBloc(0, indexLastDestructibleLine + (_nbLineEnabled / 2));
 		if(MiddleBloc != null)
 			GameManager.Instance.SetPlayCameraY(MiddleBloc.StartY);

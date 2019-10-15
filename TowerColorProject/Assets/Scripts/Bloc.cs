@@ -62,6 +62,7 @@ public class Bloc : MonoBehaviour
 		NeighborsBlocs.Remove(bloc);
 	}
 
+	//Register the initial height of the bloc in order to consider it destroyed when it falls below a certain height
 	public void RegisterStartY()
 	{
 		StartY = transform.position.y;
@@ -73,7 +74,7 @@ public class Bloc : MonoBehaviour
 		BlocRenderer.enabled = visible;
 	}
 
-	//Todo Color
+	//Apply the material corresponding to the bloc color
 	public void ApplyColor(bool setBlackIfNotDestructible = true) {
 
 		if (setBlackIfNotDestructible)
@@ -86,8 +87,6 @@ public class Bloc : MonoBehaviour
 		{
 			BlocRenderer.material = GameManager.Instance.GameData.GetBlocColorMaterial(Color);
 		}
-
-		//DestructionParticleRenderer.material = GameManager.Instance.GameData.GetBlocColorMaterial(Color);
 	}
 
 	public void SetDestructible(bool destructible)
@@ -96,18 +95,13 @@ public class Bloc : MonoBehaviour
 		TogglePhysics(destructible);
 	}
 
-	IEnumerator EnablePhysicsAfterTime()
-	{
-		yield return new WaitForSeconds(1f);
-		TogglePhysics(true);
-	}
-
 	public void TogglePhysics(bool toggle)
 	{
 		if(BlocRigidbody)
 			BlocRigidbody.isKinematic = !toggle;
 	}
 
+	//Destroy the bloc and trigger feedback and events
 	public void DestroyBloc(bool destroyFromHit = true)
 	{
 		Destroyed = true;
@@ -131,7 +125,7 @@ public class Bloc : MonoBehaviour
 		}
 	}
 
-	//Simplified version without event to avoid having too much blocs on the floor at the end
+	//Simplified version without event - to avoid having too much blocs on the floor at the end
 	public void DestroyBlocByGround()
 	{
 		Destroyed = true;

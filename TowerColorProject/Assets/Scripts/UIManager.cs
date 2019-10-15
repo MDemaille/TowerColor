@@ -6,16 +6,12 @@ using UnityEngine;
 using UnityEngine.EventSystems;
 using UnityEngine.UI;
 
+//Class that handles User Interface
 public class UIManager : Singleton<UIManager>
 {
-	public GameObject SphereToShoot;
-	public Renderer SphereToShootRenderer;
-
 	public Text NbShotsText;
 
 	public Image FadeImage;
-
-	public Text TouchToStartText;
 
 	[Header("Level and Score")]
 
@@ -55,9 +51,9 @@ public class UIManager : Singleton<UIManager>
     {
 		EventManager.SetEventListener(EventList.OnShotFired, UpdateNbShotText, register);
 		EventManager.SetEventListener(EventList.OnDrawNewBall, UpdateNbShotText, register);
-		EventManager.SetEventListener(EventList.OnDrawNewBall, UpdateWeaponColors, register);
+		EventManager.SetEventListener(EventList.OnDrawNewBall, UpdateWeaponUI, register);
 		EventManager.SetEventListener(EventList.OnDrawNewBall, UpdateLevelAndScoreColor, register);
-		EventManager.SetEventListener(EventList.OnGamePhaseChanged, SetLevelPanel, register);
+		EventManager.SetEventListener(EventList.OnGamePhaseChanged, OnGamePhaseChanged, register);
 		EventManager.SetEventListener(EventList.OnBlocDestroyed, UpdateScoreUI, register);
 		EventManager.SetEventListener(EventList.OnComboCountUpdated, UpdateComboUI, register);
 		EventManager.SetEventListener(EventList.OnFailTimerUpdate, UpdateFailTimerUI, register);
@@ -65,13 +61,12 @@ public class UIManager : Singleton<UIManager>
 		EventManager.SetEventListener(EventList.OnMaxComboCountShow, ShowMaxComboUI, register);
 	}
 
-    void SetLevelPanel(object obj)
+    void OnGamePhaseChanged(object obj)
     {
 	    GamePhase gamePhase = (GamePhase) obj;
 
 	    if (gamePhase == GamePhase.Init)
 	    {
-			//SphereToShoot.transform.localScale = Vector3.zero;
 			HideWeaponUI();
 			NbShotsText.gameObject.SetActive(false);
 
@@ -127,7 +122,6 @@ public class UIManager : Singleton<UIManager>
 	    ScoreJaugeBackground.color = newColor;
 	    ScoreJaugeFill.color = newColor;
 	    TextNextLevel.color = newColor;
-
 	    BackgroundNextLevel.color = Color.white;
     }
 
@@ -185,6 +179,7 @@ public class UIManager : Singleton<UIManager>
 		}
     }
 
+	//Display the maximum combo (hits, medals and label) at the end of the level if the player wins
     void ShowMaxComboUI(object obj)
     {
 	    int maxCombo = (int) obj;
@@ -219,9 +214,8 @@ public class UIManager : Singleton<UIManager>
 		NbShotsText.text = GameManager.Instance.NbShotsAvailable.ToString();
 	}
 
-	void UpdateWeaponColors(object obj)
+	void UpdateWeaponUI(object obj)
 	{
-		//SphereToShootRenderer.material = GameManager.Instance.GameData.GetBlocColorMaterial(GameManager.Instance.CurrentWeaponColors[0]);
 		int weaponColorCount = GameManager.Instance.CurrentWeaponColors.Count;
 
 		int weaponId = GameManager.Instance.CurrentWeaponColors.Count - 1;
