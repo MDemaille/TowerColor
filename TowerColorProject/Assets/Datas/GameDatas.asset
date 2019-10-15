@@ -77,12 +77,22 @@ MonoBehaviour:
   MaterialYellow: {fileID: 2100000, guid: 4a1e72bf47b334e4b80cf614354ff035, type: 2}
   MaterialRed: {fileID: 2100000, guid: 328dbc688068e9d46aafa53599079444, type: 2}
   MaterialBlack: {fileID: 2100000, guid: 430cfaf1b7cdf904ba121467c9294f91, type: 2}
-  ColorBlue: {r: 0, g: 0.105446815, b: 1, a: 1}
+  ColorBlue: {r: 0, g: 0.6176336, b: 1, a: 1}
   ColorPurple: {r: 0.40815392, g: 0.024919916, b: 0.754717, a: 1}
   ColorPink: {r: 0.8679245, g: 0.028657902, b: 0.7198185, a: 1}
   ColorGreen: {r: 0.020247417, g: 0.8584906, b: 0.13938864, a: 1}
   ColorYellow: {r: 0.8867924, g: 0.8554939, b: 0, a: 1}
   ColorRed: {r: 0.764151, g: 0, b: 0, a: 1}
+  Weapons:
+  - NbColorAffected: 3
+    ChanceOfBeingPicked: 0.05
+    Label: Triple !!!
+  - NbColorAffected: 2
+    ChanceOfBeingPicked: 0.1
+    Label: Double !!
+  - NbColorAffected: 1
+    ChanceOfBeingPicked: 1
+    Label: 
   YDistanceToConsiderBlocDestroyed: 0.5
   YLowestCamera: 6
   BallTrajectory:

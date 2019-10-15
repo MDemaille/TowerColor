@@ -31,8 +31,6 @@ public class GameManager : Singleton<GameManager>
 
 	public GameObject VictoryParticleSystem;
 
-	public bool ColorBlindOption = false;
-
 	//Variables to handle game loop
 	public GamePhase CurrentGamePhase { get; private set; }
 	public int CurrentLevel { get; private set; }
@@ -46,7 +44,7 @@ public class GameManager : Singleton<GameManager>
 
 	//Shots
 	public int NbShotsAvailable { get; private set; }
-	public BlocColor CurrentShotColor { get; private set; }
+	public List<BlocColor> CurrentWeaponColors { get; private set; }
 
 	public float MaximumTimeTouchToShoot = 0.15f;
 	private float _touchTimer = 0f;
@@ -138,7 +136,7 @@ public class GameManager : Singleton<GameManager>
 
 		yield return BlendCameraPosition(MainCamera.transform.position, CameraTargetTransform.position, 1f);
 
-		DrawNewBall();
+		DrawNewWeapon();
 		SetGamePhase(GamePhase.Play);
 	}
 
@@ -234,18 +232,22 @@ public class GameManager : Singleton<GameManager>
 
 	#region Shoot
 
-	public void DrawNewBall() {
-		//Get a list of still available colors in tower and pick a random one
-		List<BlocColor> availableBlocColors = Tower.GetColorsAvailableInTower();
-		if (availableBlocColors.Count == 0)
+	public void DrawNewWeapon() {
+		float randomFloat = Random.Range(0f, 1f);
+
+		Weapon currentWeapon = GameData.GetWeapon(1);
+
+		foreach (var weapon in GameData.Weapons)
 		{
-			Debug.LogError("No color available in tower, this should not happen");
-		}
-		else
-		{
-			CurrentShotColor = availableBlocColors[Random.Range(0, availableBlocColors.Count)];
+			if (randomFloat <= weapon.ChanceOfBeingPicked && weapon.NbColorAffected < Tower.NbColorInTower)
+			{
+				currentWeapon = weapon;
+				break;
+			}
 		}
 
+		CurrentWeaponColors = Tower.GetRandomColorsAvailableInTower(currentWeapon.NbColorAffected);
+		
 		ComboCount = 0;
 
 		EventManager.TriggerEvent(EventList.OnDrawNewBall);
@@ -317,18 +319,18 @@ public class GameManager : Singleton<GameManager>
 	public void Shoot(Bloc blocToShoot)
 	{
 		NbShotsAvailable--;
-		StartCoroutine(ShootBallCoroutine(0.25f, blocToShoot, CurrentShotColor));
+		StartCoroutine(ShootBallCoroutine(0.25f, blocToShoot, CurrentWeaponColors));
 
 		EventManager.TriggerEvent(EventList.OnShotFired, NbShotsAvailable);
-		DrawNewBall();
+		DrawNewWeapon();
 	}
 
-	public IEnumerator ShootBallCoroutine(float timeToReachTarget, Bloc blocToShoot, BlocColor colorShot )
+	public IEnumerator ShootBallCoroutine(float timeToReachTarget, Bloc blocToShoot, List<BlocColor> weaponColors )
 	{
 		GameObject ball = Instantiate(Instance.GameData.ShotPrefab, ShotSpawn.position, Quaternion.identity);
 		Renderer ballRenderer = ball.GetComponent<Renderer>();
 
-		ballRenderer.material = GameData.GetBlocColorMaterial(CurrentShotColor);
+		ballRenderer.material = GameData.GetBlocColorMaterial(CurrentWeaponColors[0]);
 
 		float timer = 0f;
 		float progression = 0f;
@@ -350,8 +352,8 @@ public class GameManager : Singleton<GameManager>
 		}
 
 		Destroy(ball);
-		if (blocToShoot.Destructible && blocToShoot.Color.Equals(colorShot)) {
-			List<Bloc> blocsToDestroy = Tower.GetBlocsToDestroy(blocToShoot);
+		if (blocToShoot.Destructible && weaponColors.Contains(blocToShoot.Color)) {
+			List<Bloc> blocsToDestroy = Tower.GetBlocsToDestroy(blocToShoot,weaponColors);
 			StartCoroutine(DestroyBlocsWithIntervalTime(GameData.TimeBetweenBlocDestruction, blocsToDestroy));
 		}
 	}

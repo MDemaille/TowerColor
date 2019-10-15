@@ -13,7 +13,7 @@ public class Tower : MonoBehaviour
 	private List<Bloc> _tower = new List<Bloc>();
 	private int _nbBlocPerLine;
 	private int _height;
-	private int _nbColorInTower;
+	public int NbColorInTower { get; private set; }
 	private int _nbLineEnabled;
 
 	private List<BlocColor> _towerColors = new List<BlocColor>();
@@ -37,7 +37,7 @@ public class Tower : MonoBehaviour
 	void GenerateTower(int nbBlocPerLine, int height, int nbColor) {
 		_nbBlocPerLine = nbBlocPerLine;
 		_height = height;
-		_nbColorInTower = nbColor;
+		NbColorInTower = nbColor;
 
 		foreach (var bloc in _tower)
 		{
@@ -92,11 +92,40 @@ public class Tower : MonoBehaviour
 			if (!colors.Contains(_tower[i].Color))
 				colors.Add(_tower[i].Color);
 
-			if (colors.Count >= _nbColorInTower)
+			if (colors.Count >= NbColorInTower)
 				break;
 		}
 
 		return colors;
+	}
+
+	public List<BlocColor> GetRandomColorsAvailableInTower(int count) {
+		List<BlocColor> availableColors = GetColorsAvailableInTower();
+		List<BlocColor> selectedColors = new List<BlocColor>();
+
+		for (int i = 0; i < count; i++) {
+
+			if(availableColors.Count <= 0)
+				continue;
+
+			int colorPicked = Random.Range(0, availableColors.Count);
+			selectedColors.Add(availableColors[colorPicked]);
+			availableColors.RemoveAt(colorPicked);
+		}
+
+		//We complete with other colors if we have not enough left
+		if(selectedColors.Count < count)
+		{
+			int cpt = 0;
+			List<BlocColor> allColors = new List<BlocColor> { BlocColor.Blue, BlocColor.Green, BlocColor.Pink, BlocColor.Purple, BlocColor.Red, BlocColor.Yellow };
+			while (selectedColors.Count < count)
+			{
+				if(selectedColors.Contains(allColors[cpt]))
+					selectedColors.Add(allColors[cpt]);
+			}
+		}
+
+		return selectedColors;
 	}
 
 	public void RefreshTowerColors(bool showBlackBlocsIfNotDestructible)
@@ -197,7 +226,7 @@ public class Tower : MonoBehaviour
 	}
 
 	//Return the blocs to destroy if a bloc has been hit
-	public List<Bloc> GetBlocsToDestroy(Bloc blocHit)
+	public List<Bloc> GetBlocsToDestroy(Bloc blocHit, List<BlocColor> colorsToDestroy)
 	{
 		List<Bloc> blocsToDestroy = new List<Bloc>();
 		blocsToDestroy.Add(blocHit);
@@ -213,7 +242,7 @@ public class Tower : MonoBehaviour
 			for (int i = 0; i < blocNode.NeighborsBlocs.Count; i++)
 			{
 				Bloc currentBloc = blocNode.NeighborsBlocs[i];
-				if (currentBloc != null && currentBloc.Destructible && currentBloc.Color.Equals(blocHit.Color) && !blocsToDestroy.Contains(currentBloc)) {
+				if (currentBloc != null && currentBloc.Destructible && colorsToDestroy.Contains(currentBloc.Color) && !blocsToDestroy.Contains(currentBloc)) {
 					blocsToDestroy.Add(currentBloc);
 					blocsToCheck.Add(currentBloc);
 				}

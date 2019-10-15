@@ -32,6 +32,9 @@ public class GameDatas : ScriptableObject
 	public Color ColorYellow;
 	public Color ColorRed;
 
+	[Header("Weapons")]
+	public List<Weapon> Weapons;
+
 	[Header("Parameters")]
 	public float YDistanceToConsiderBlocDestroyed = 0.5f;
 	public float YLowestCamera = 7f;
@@ -65,7 +68,18 @@ public class GameDatas : ScriptableObject
 		return currentStep;
 	}
 
-	//TODO : Color blind option
+	public Weapon GetWeapon(int weaponNbColor)
+	{
+		foreach (var weapon in Weapons)
+		{
+			if (weapon.NbColorAffected == weaponNbColor)
+				return weapon;
+		}
+
+		return null;
+	}
+
+
 	public Material GetBlocColorMaterial(BlocColor color) {
 		switch (color) {
 			case (BlocColor.Blue):
@@ -120,4 +134,15 @@ public class ComboStep
 {
 	public int Count = 0;
 	public string Label = "Cool !";
+}
+
+[System.Serializable]
+public class Weapon
+{
+	public int NbColorAffected = 1;
+
+	[Range(0f,1f)]
+	public float ChanceOfBeingPicked = 0.1f;
+
+	public string Label = "";
 }

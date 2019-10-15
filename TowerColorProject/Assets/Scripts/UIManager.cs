@@ -28,14 +28,6 @@ public class UIManager : Singleton<UIManager>
 	public Image BackgroundNextLevel;
 	public Text TextNextLevel;
 
-	public RectTransform ScorePanel;
-	public Image JointScore;
-	public Image BackgroundScore;
-	public Text ScoreText;
-
-	private float _xStartScore;
-	private float _xEndScore;
-
 	[Header("Texts to show steps")]
 	public Text TextWin;
 	public Text TextFail;
@@ -50,19 +42,20 @@ public class UIManager : Singleton<UIManager>
 
 	public List<GameObject> ComboMedals;
 
+	[Header("Weapons")]
+	public List<WeaponUI> WeaponsUi;
+	public Text WeaponLabelText;
+
     void Awake()
     {
         RegisterToEvent(true);
-
-        _xStartScore = ScoreJauge.position.x - ScoreJauge.sizeDelta.x;
-		_xEndScore = ScoreJauge.position.x + ScoreJauge.sizeDelta.x;
 	}
 
     void RegisterToEvent(bool register)
     {
 		EventManager.SetEventListener(EventList.OnShotFired, UpdateNbShotText, register);
 		EventManager.SetEventListener(EventList.OnDrawNewBall, UpdateNbShotText, register);
-		EventManager.SetEventListener(EventList.OnDrawNewBall, UpdateSphereToShoot, register);
+		EventManager.SetEventListener(EventList.OnDrawNewBall, UpdateWeaponColors, register);
 		EventManager.SetEventListener(EventList.OnDrawNewBall, UpdateLevelAndScoreColor, register);
 		EventManager.SetEventListener(EventList.OnGamePhaseChanged, SetLevelPanel, register);
 		EventManager.SetEventListener(EventList.OnBlocDestroyed, UpdateScoreUI, register);
@@ -78,7 +71,8 @@ public class UIManager : Singleton<UIManager>
 
 	    if (gamePhase == GamePhase.Init)
 	    {
-			SphereToShoot.transform.localScale = Vector3.zero;
+			//SphereToShoot.transform.localScale = Vector3.zero;
+			HideWeaponUI();
 			NbShotsText.gameObject.SetActive(false);
 
 			BackgroundNextLevel.color = Color.white;
@@ -92,6 +86,9 @@ public class UIManager : Singleton<UIManager>
 			FailTimer.SetActive(false);
 			TextFail.gameObject.SetActive(false);
 			FailTimerJauge.fillAmount = 0f;
+
+			WeaponLabelText.transform.localScale = Vector3.zero;
+
 	    }
 
 	    if (gamePhase == GamePhase.Show)
@@ -103,7 +100,7 @@ public class UIManager : Singleton<UIManager>
 
 	    if (gamePhase == GamePhase.Play)
 	    {
-		    SphereToShoot.transform.localScale = Vector3.one * 0.07f;
+		    //SphereToShoot.transform.localScale = Vector3.one * 0.07f;
 		    NbShotsText.gameObject.SetActive(true);
 		}
 
@@ -123,7 +120,7 @@ public class UIManager : Singleton<UIManager>
 
     void UpdateLevelAndScoreColor(object obj)
     {
-	    Color newColor = GameManager.Instance.GameData.GetBlocColorColorValue(GameManager.Instance.CurrentShotColor);
+	    Color newColor = GameManager.Instance.GameData.GetBlocColorColorValue(GameManager.Instance.CurrentWeaponColors[0]);
 	    BackgroundCurrentLevel.color = newColor;
 	    ScoreJaugeBackground.color = newColor;
 	    BorderNextLevel.color = newColor;
@@ -132,19 +129,10 @@ public class UIManager : Singleton<UIManager>
 	    TextNextLevel.color = newColor;
 
 	    BackgroundNextLevel.color = Color.white;
-
-	    JointScore.color = newColor;
-	    BackgroundScore.color = newColor;
     }
 
     void UpdateScoreUI(object obj)
     {
-	    float x = Mathf.Lerp(_xStartScore, _xEndScore, GameManager.Instance.Score);
-		ScorePanel.position = new Vector2(x, ScorePanel.position.y);
-
-		double prctScore = Math.Ceiling((double)GameManager.Instance.Score * 100);
-		ScoreText.text = prctScore.ToString() + "%";
-
 		ScoreJaugeFill.fillAmount = GameManager.Instance.Score;
     }
 
@@ -200,7 +188,8 @@ public class UIManager : Singleton<UIManager>
     void ShowMaxComboUI(object obj)
     {
 	    int maxCombo = (int) obj;
-	    ComboStep step = GameManager.instance.GameData.GetComboStep(maxCombo);
+	    ComboCountText.text = maxCombo + " HITS";
+		ComboStep step = GameManager.instance.GameData.GetComboStep(maxCombo);
 	    ComboLabelText.text = step.Label;
 	    ComboCountText.color =
 		    GameManager.Instance.GameData.GetBlocColorColorValue(GameManager.instance.LastDestroyedColor);
@@ -208,11 +197,14 @@ public class UIManager : Singleton<UIManager>
 	    int indexCombo = GameManager.instance.GameData.ComboSteps.IndexOf(step);
 	    for (int i = 0; i <= indexCombo; i++)
 	    {
-		    GameObject medal = ComboMedals[i];
-		    medal.SetActive(true);
-		    medal.transform.localScale = Vector3.zero;
-		    medal.transform.DOScale(2f, 0.25f).OnComplete(() => { medal.transform.DOScale(1f, 0.25f); });
-		}
+		    if (i >= 0 && i < ComboMedals.Count)
+		    {
+			    GameObject medal = ComboMedals[i];
+			    medal.SetActive(true);
+			    medal.transform.localScale = Vector3.zero;
+			    medal.transform.DOScale(2f, 0.25f).OnComplete(() => { medal.transform.DOScale(1f, 0.25f); });
+		    }
+	    }
 	}
 
     void ResetComboMedals(object obj)
@@ -227,9 +219,32 @@ public class UIManager : Singleton<UIManager>
 		NbShotsText.text = GameManager.Instance.NbShotsAvailable.ToString();
 	}
 
-	void UpdateSphereToShoot(object obj)
+	void UpdateWeaponColors(object obj)
 	{
-		SphereToShootRenderer.material = GameManager.Instance.GameData.GetBlocColorMaterial(GameManager.Instance.CurrentShotColor);
+		//SphereToShootRenderer.material = GameManager.Instance.GameData.GetBlocColorMaterial(GameManager.Instance.CurrentWeaponColors[0]);
+		int weaponColorCount = GameManager.Instance.CurrentWeaponColors.Count;
+
+		int weaponId = GameManager.Instance.CurrentWeaponColors.Count - 1;
+		for (int i = 0; i < WeaponsUi.Count; i++)
+		{
+			WeaponsUi[i].gameObject.SetActive(i == weaponId);
+		}
+
+		for (int i = 0; i < weaponColorCount; i++)
+		{
+			WeaponsUi[weaponId].SetColorImage(i,GameManager.Instance.CurrentWeaponColors[i]);
+		}
+
+		Weapon currentWeapon = GameManager.instance.GameData.GetWeapon(weaponColorCount);
+		WeaponLabelText.text = currentWeapon.Label;
+		WeaponLabelText.transform.DOScale(2f, 0.4f).OnComplete(() => { WeaponLabelText.transform.DOScale(0f, 0.4f); });
+	}
+
+	void HideWeaponUI()
+	{
+		for (int i = 0; i < WeaponsUi.Count; i++) {
+			WeaponsUi[i].gameObject.SetActive(false);
+		}
 	}
 
 	public IEnumerator FadeScreen(Color colorTarget, float time)
