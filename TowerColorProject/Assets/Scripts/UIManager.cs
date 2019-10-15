@@ -68,6 +68,8 @@ public class UIManager : Singleton<UIManager>
 		EventManager.SetEventListener(EventList.OnBlocDestroyed, UpdateScoreUI, register);
 		EventManager.SetEventListener(EventList.OnComboCountUpdated, UpdateComboUI, register);
 		EventManager.SetEventListener(EventList.OnFailTimerUpdate, UpdateFailTimerUI, register);
+		EventManager.SetEventListener(EventList.OnShotFired, ResetComboMedals, register);
+		EventManager.SetEventListener(EventList.OnMaxComboCountShow, ShowMaxComboUI, register);
 	}
 
     void SetLevelPanel(object obj)
@@ -156,6 +158,10 @@ public class UIManager : Singleton<UIManager>
 
     void UpdateComboUI(object obj)
     {
+		//Quickfix
+		if (GameManager.Instance.CurrentGamePhase == GamePhase.LevelEnd)
+			return;
+
 	    int comboCount = GameManager.Instance.ComboCount;
 
 	    if (comboCount > 0)
@@ -188,8 +194,33 @@ public class UIManager : Singleton<UIManager>
 	    {
 			ComboCountText.gameObject.SetActive(false);
 			ComboLabelText.gameObject.SetActive(false);
-	    }
+		}
     }
+
+    void ShowMaxComboUI(object obj)
+    {
+	    int maxCombo = (int) obj;
+	    ComboStep step = GameManager.instance.GameData.GetComboStep(maxCombo);
+	    ComboLabelText.text = step.Label;
+	    ComboCountText.color =
+		    GameManager.Instance.GameData.GetBlocColorColorValue(GameManager.instance.LastDestroyedColor);
+
+	    int indexCombo = GameManager.instance.GameData.ComboSteps.IndexOf(step);
+	    for (int i = 0; i <= indexCombo; i++)
+	    {
+		    GameObject medal = ComboMedals[i];
+		    medal.SetActive(true);
+		    medal.transform.localScale = Vector3.zero;
+		    medal.transform.DOScale(2f, 0.25f).OnComplete(() => { medal.transform.DOScale(1f, 0.25f); });
+		}
+	}
+
+    void ResetComboMedals(object obj)
+    {
+	    foreach (var medal in ComboMedals) {
+		    medal.SetActive(false);
+	    }
+	}
 
 	void UpdateNbShotText(object obj)
 	{

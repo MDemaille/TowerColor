@@ -56,6 +56,7 @@ public class GameManager : Singleton<GameManager>
 	//Combo
 	public int ComboCount = 0;
 	public BlocColor LastDestroyedColor { get; private set; }
+	private int _maxComboCount = 0;
 
 	//LevelFail
 	private bool _failTimerEnabled = false;
@@ -101,10 +102,10 @@ public class GameManager : Singleton<GameManager>
 		SetComboCount(0);
 
 		_failTimerEnabled = false;
+		_maxComboCount = 0;
 
 		ShowLevel();
 	}
-
 	
 
 	public void SetScore(float score)
@@ -206,6 +207,8 @@ public class GameManager : Singleton<GameManager>
 
 		UIManager.Instance.TextWin.gameObject.SetActive(true);
 
+		EventManager.TriggerEvent(EventList.OnMaxComboCountShow, _maxComboCount);
+
 		yield return new WaitUntil(()=>Input.GetMouseButtonDown(0) || Input.touchCount > 0);
 
 		yield return UIManager.instance.FadeScreen(Color.white, 0.5f);
@@ -229,9 +232,9 @@ public class GameManager : Singleton<GameManager>
 
 	#endregion
 
-		#region Shoot
+	#region Shoot
 
-		public void DrawNewBall() {
+	public void DrawNewBall() {
 		//Get a list of still available colors in tower and pick a random one
 		List<BlocColor> availableBlocColors = Tower.GetColorsAvailableInTower();
 		if (availableBlocColors.Count == 0)
@@ -258,6 +261,9 @@ public class GameManager : Singleton<GameManager>
 	public void SetComboCount(int count)
 	{
 		ComboCount = count;
+		if (ComboCount > _maxComboCount)
+			_maxComboCount = ComboCount;
+
 		EventManager.TriggerEvent(EventList.OnComboCountUpdated);
 	}
 
