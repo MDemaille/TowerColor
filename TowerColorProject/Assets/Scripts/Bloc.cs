@@ -119,9 +119,6 @@ public class Bloc : MonoBehaviour
 
 		if (destroyFromHit)
 		{
-			//BlocRenderer.enabled = false;
-			//BlocCollider.enabled = false;
-
 			EventManager.TriggerEvent(EventList.OnBlocDestroyedFromHit);
 
 			GameObject particleSystem = Instantiate(DestructionParticleSystem, transform.position, Quaternion.identity);
@@ -132,10 +129,19 @@ public class Bloc : MonoBehaviour
 
 			//gameObject.SetActive(false);
 		}
-
-		
 	}
 
+	//Simplified version without event to avoid having too much blocs on the floor at the end
+	public void DestroyBlocByGround()
+	{
+		Destroyed = true;
+
+		GameObject particleSystem = Instantiate(DestructionParticleSystem, transform.position, Quaternion.identity);
+		ParticleSystemRenderer destructionParticleRenderer = particleSystem.GetComponent<ParticleSystemRenderer>();
+		destructionParticleRenderer.material = GameManager.Instance.GameData.GetBlocColorMaterial(Color);
+
+		Destroy(gameObject);
+	}
 	
 
 }

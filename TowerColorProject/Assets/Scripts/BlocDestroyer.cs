@@ -4,8 +4,10 @@ using UnityEngine;
 
 public class BlocDestroyer : MonoBehaviour
 {
-	private void OnTriggerEnter(Collider other) {
-		if(other.CompareTag("Bloc"))
-			Destroy(other);
+	private void OnCollisionEnter(Collision other)
+	{
+		Bloc bloc = other.gameObject.GetComponent<Bloc>();
+		if(bloc.Y > 0)
+			bloc.DestroyBlocByGround();
 	}
 }

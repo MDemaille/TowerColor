@@ -85,10 +85,10 @@ MonoBehaviour:
   ColorRed: {r: 0.764151, g: 0, b: 0, a: 1}
   Weapons:
   - NbColorAffected: 3
-    ChanceOfBeingPicked: 0.05
+    ChanceOfBeingPicked: 0.01
     Label: Triple !!!
   - NbColorAffected: 2
-    ChanceOfBeingPicked: 0.1
+    ChanceOfBeingPicked: 0.08
     Label: Double !!
   - NbColorAffected: 1
     ChanceOfBeingPicked: 1

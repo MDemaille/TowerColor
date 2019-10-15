@@ -89,7 +89,7 @@ public class Tower : MonoBehaviour
 		List<BlocColor> colors = new List<BlocColor>();
 
 		for (int i = 0; i < _tower.Count; i++) {
-			if (!colors.Contains(_tower[i].Color))
+			if (_tower[i] != null && !colors.Contains(_tower[i].Color) && !_tower[i].Destroyed)
 				colors.Add(_tower[i].Color);
 
 			if (colors.Count >= NbColorInTower)
