@@ -24,10 +24,10 @@ MonoBehaviour:
     NbShots: 10
   - LevelToApplyStep: 1
     TowerHeight: 15
-    NbColors: 2
+    NbColors: 3
     NbLinesEnabled: 8
     NbShots: 15
-  - LevelToApplyStep: 3
+  - LevelToApplyStep: 4
     TowerHeight: 18
     NbColors: 3
     NbLinesEnabled: 8
@@ -59,17 +59,17 @@ MonoBehaviour:
   - Count: 40
     Label: UNSTOPPABLE !!!
   - Count: 50
-    Label: Invincible !!!!
+    Label: Invincible !!!
   - Count: 60
     Label: Master of Colors.
   - Count: 70
-    Label: Master of Masters of colors !
+    Label: Color Devil ?
   - Count: 80
-    Label: No hope for the tower.
+    Label: Tower crusher !
   - Count: 90
-    Label: Rainbow Rider
+    Label: Rainbow Rider !
   - Count: 100
-    Label: Double Rainbow Rider
+    Label: Double Rainbow Rider !!
   MaterialBlue: {fileID: 2100000, guid: 52d6eb716f2146342b80084d0a146f4b, type: 2}
   MaterialPurple: {fileID: 2100000, guid: 6fdf0f1beb228c849b2bad10f34d83ba, type: 2}
   MaterialPink: {fileID: 2100000, guid: 2dc3fa8e875755e488774e6d44e64dc0, type: 2}

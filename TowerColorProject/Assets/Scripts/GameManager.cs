@@ -177,6 +177,9 @@ public class GameManager : Singleton<GameManager>
 		float timer = 0f;
 		while (timer < GameData.TimeToFailLevelWhenOutOfShots)
 		{
+			if (CurrentGamePhase == GamePhase.LevelEnd)
+				yield break;
+
 			yield return new WaitForSeconds(Time.deltaTime);
 			timer += Time.deltaTime;
 			EventManager.TriggerEvent(EventList.OnFailTimerUpdate, timer/GameData.TimeToFailLevelWhenOutOfShots);
